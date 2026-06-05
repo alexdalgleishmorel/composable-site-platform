@@ -8,13 +8,17 @@
  * Backend code should import the React-free surface from `@csp/blocks/schemas` instead, to keep
  * React out of the Lambda bundle.
  */
+import { richText } from './blocks/richText';
 import { BlockRegistry } from './registry';
 
 export * from './contract';
 export * from './registry';
 export * from './validate';
 
+export { richText };
+export type { RichTextData } from './blocks/richText';
+
 export const BLOCKS_PACKAGE = '@csp/blocks';
 
-/** The shared registry. Block modules call `registry.register(...)` as they are added. */
-export const registry = new BlockRegistry();
+/** The shared registry, assembled from the MVP block modules (#6-#11). */
+export const registry = new BlockRegistry().register(richText);
