@@ -41,11 +41,11 @@ describe('StringListField', () => {
     expect(state()).toBe('ONE|two|');
 
     // Move the first row down.
-    fireEvent.click(screen.getAllByTitle('Move down')[0]!);
+    fireEvent.click(screen.getAllByTitle('Move item down')[0]!);
     expect(state()).toBe('two|ONE|');
 
     // Remove the last row.
-    fireEvent.click(screen.getAllByTitle('Remove')[2]!);
+    fireEvent.click(screen.getAllByTitle('Remove item')[2]!);
     expect(state()).toBe('two|ONE');
   });
 });

@@ -5,6 +5,7 @@
  * therefore React — into the Lambda bundle. As MVP block modules land (#6-#11) their React-free
  * schema + validator are re-exported here and assembled into `contentValidators`.
  */
+import { projectGridSchema } from './blocks/projectGrid/schema';
 import { richTextSchema } from './blocks/richText/schema';
 import type { ContentValidators } from './validate';
 
@@ -15,6 +16,7 @@ export type { ContentValidators, ContentIssue, ValidateResult } from './validate
 export const contentValidators: ContentValidators = {
   schemas: {
     richText: richTextSchema,
+    projectGrid: projectGridSchema,
   },
   validators: {},
 };

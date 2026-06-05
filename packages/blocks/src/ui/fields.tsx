@@ -95,20 +95,25 @@ export function CheckboxField(props: {
   );
 }
 
-/** Up / down / delete controls for one row of a list. */
+/**
+ * Up / down / delete controls for one row of a list. `label` names the item ("project", "image", …)
+ * so tooltips are clear and — importantly — distinct across nested lists (a project row contains its
+ * own image and tag lists).
+ */
 export function RowControls(props: {
   index: number;
   count: number;
+  label: string;
   onMove: (from: number, to: number) => void;
   onRemove: (index: number) => void;
 }) {
-  const { index, count, onMove, onRemove } = props;
+  const { index, count, label, onMove, onRemove } = props;
   return (
     <div className="csp-row-controls">
       <button
         type="button"
         className="csp-btn csp-btn--icon"
-        title="Move up"
+        title={`Move ${label} up`}
         disabled={index === 0}
         onClick={() => onMove(index, index - 1)}
       >
@@ -117,7 +122,7 @@ export function RowControls(props: {
       <button
         type="button"
         className="csp-btn csp-btn--icon"
-        title="Move down"
+        title={`Move ${label} down`}
         disabled={index === count - 1}
         onClick={() => onMove(index, index + 1)}
       >
@@ -126,7 +131,7 @@ export function RowControls(props: {
       <button
         type="button"
         className="csp-btn csp-btn--icon csp-btn--danger"
-        title="Remove"
+        title={`Remove ${label}`}
         onClick={() => onRemove(index)}
       >
         ×
@@ -169,7 +174,13 @@ export function ListEditor<T>(props: {
           <div className="csp-list__body">
             {renderRow(item, (patch) => update(index, patch), index)}
           </div>
-          <RowControls index={index} count={items.length} onMove={reorder} onRemove={remove} />
+          <RowControls
+            index={index}
+            count={items.length}
+            label={addLabel}
+            onMove={reorder}
+            onRemove={remove}
+          />
         </div>
       ))}
       <button
@@ -220,6 +231,7 @@ export function StringListField(props: {
             <RowControls
               index={index}
               count={values.length}
+              label={addLabel}
               onMove={(from, to) => onChange(move(values, from, to))}
               onRemove={(i) => onChange(values.filter((_, j) => j !== i))}
             />
