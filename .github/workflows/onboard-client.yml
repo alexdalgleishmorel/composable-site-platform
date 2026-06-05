@@ -1,0 +1,78 @@
+name: Onboard client
+
+# One dispatch to onboard a new (already-registered) client: provision the tenant, deploy the bundle,
+# and seed content. Gated by the production environment approval. The discrete provision-tenant /
+# deploy-client workflows remain for re-running a single phase.
+
+on:
+  workflow_dispatch:
+    inputs:
+      client:
+        description: 'Client folder under clients/<client>/bundle'
+        required: true
+        default: jmdm
+      tenant_domain:
+        description: 'Tenant domain / tenantId (e.g. jmdm.org) — must be registered first'
+        required: true
+      client_email:
+        description: "Client's allow-listed Google email"
+        required: true
+      user_pool_id:
+        description: 'Shared Cognito user pool id (infra/shared output)'
+        required: true
+      api_base_url:
+        description: 'Shared API base URL (infra/shared output)'
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency: onboard-${{ inputs.tenant_domain }}
+
+jobs:
+  onboard:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Assume AWS deploy role (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Provision tenant
+        id: provision
+        working-directory: infra/tenant
+        env:
+          TF_VAR_tenant_domain: ${{ inputs.tenant_domain }}
+          TF_VAR_client_google_email: ${{ inputs.client_email }}
+          TF_VAR_user_pool_id: ${{ inputs.user_pool_id }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
+            -backend-config="dynamodb_table=${{ vars.TF_LOCK_TABLE }}" \
+            -backend-config="region=us-east-1" \
+            -backend-config="key=tenant/${{ inputs.tenant_domain }}/terraform.tfstate"
+          terraform apply -auto-approve
+          echo "bucket=$(terraform output -raw site_bucket)" >> "$GITHUB_OUTPUT"
+          echo "distribution=$(terraform output -raw distribution_id)" >> "$GITHUB_OUTPUT"
+
+      - name: Build and deploy the bundle
+        env:
+          VITE_API_BASE_URL: ${{ inputs.api_base_url }}
+        run: |
+          pnpm --filter "./clients/${{ inputs.client }}/bundle" build
+          aws s3 sync "clients/${{ inputs.client }}/bundle/dist" "s3://${{ steps.provision.outputs.bucket }}" --delete
+          aws cloudfront create-invalidation --distribution-id "${{ steps.provision.outputs.distribution }}" --paths "/*"
+
+      - name: Seed content
+        run: pnpm --filter @csp/onboard seed -- --client "${{ inputs.client }}" --table csp-content

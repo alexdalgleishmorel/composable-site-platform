@@ -17,3 +17,14 @@ variable "user_pool_id" {
   description = "The shared Cognito user pool id (output of infra/shared)."
   type        = string
 }
+
+variable "manage_zone" {
+  description = <<-EOT
+    false (default): reference an existing Route 53 hosted zone — the one Route 53 Domains auto-creates
+    at registration, so provisioning is a single clean apply with no manual nameserver step.
+    true: have Terraform create the zone (for domains registered with an external registrar; you then
+    point that registrar's nameservers at the `nameservers` output).
+  EOT
+  type        = bool
+  default     = false
+}

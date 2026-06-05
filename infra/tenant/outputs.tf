@@ -13,10 +13,10 @@ output "distribution_domain" {
 }
 
 output "nameservers" {
-  description = "Point the domain's registrar at these (§9)."
-  value       = aws_route53_zone.this.name_servers
+  description = "Zone nameservers. With Route 53 Domains the domain already points here; with an external registrar (manage_zone=true) set these at the registrar (§9)."
+  value       = local.nameservers
 }
 
 output "zone_id" {
-  value = aws_route53_zone.this.zone_id
+  value = local.zone_id
 }
