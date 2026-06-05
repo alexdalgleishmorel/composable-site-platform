@@ -11,8 +11,8 @@ const content = (siteName: string): TenantContent => ({
   updatedAt: '2026-06-05T00:00:00.000Z',
 });
 
-function Probe({ apiBaseUrl }: { apiBaseUrl: string }) {
-  const { content: c, error, previewing } = useContent(apiBaseUrl);
+function Probe({ apiBaseUrl, tenantId }: { apiBaseUrl: string; tenantId?: string }) {
+  const { content: c, error, previewing } = useContent(apiBaseUrl, { tenantId });
   if (error) return <div>error:{error.message}</div>;
   if (!c) return <div>loading</div>;
   return (
@@ -26,15 +26,28 @@ function Probe({ apiBaseUrl }: { apiBaseUrl: string }) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('useContent', () => {
-  it('fetches GET /content on load', async () => {
+  it('fetches GET /content with the tenant query param on load', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve(content('live-jmdm')) }),
     );
+    render(<Probe apiBaseUrl="https://api.test" tenantId="jmdm.studio" />);
+    await waitFor(() => expect(screen.getByText('live:live-jmdm')).toBeTruthy());
+    expect(globalThis.fetch as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+      'https://api.test/content?tenant=jmdm.studio',
+    );
+  });
+
+  it('defaults the tenant to the current hostname (www-stripped)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve(content('live-jmdm')) }),
+    );
+    // jsdom serves these tests from http://localhost, so the default tenant is "localhost".
     render(<Probe apiBaseUrl="https://api.test" />);
     await waitFor(() => expect(screen.getByText('live:live-jmdm')).toBeTruthy());
     expect(globalThis.fetch as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
-      'https://api.test/content',
+      'https://api.test/content?tenant=localhost',
     );
   });
 
