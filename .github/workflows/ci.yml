@@ -42,7 +42,7 @@ jobs:
         # Offline validation (no AWS, no backend) of each Terraform root. `terraform plan` against the
         # real account runs in the deploy workflows once the OIDC role exists (#2/#17/#25).
         run: |
-          for dir in infra/bootstrap infra/shared; do
+          for dir in infra/bootstrap infra/shared infra/tenant; do
             echo "::group::validate $dir"
             terraform -chdir="$dir" init -backend=false -input=false
             terraform -chdir="$dir" validate

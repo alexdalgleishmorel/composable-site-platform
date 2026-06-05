@@ -1,0 +1,46 @@
+name: Provision tenant
+
+on:
+  workflow_dispatch:
+    inputs:
+      tenant_domain:
+        description: 'Tenant domain / tenantId (e.g. jmdm.org)'
+        required: true
+      client_email:
+        description: "Client's allow-listed Google email"
+        required: true
+      user_pool_id:
+        description: 'Shared Cognito user pool id (infra/shared output)'
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assume AWS deploy role (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+      - uses: hashicorp/setup-terraform@v3
+      - name: Terraform apply (per-tenant state)
+        working-directory: infra/tenant
+        env:
+          TF_VAR_tenant_domain: ${{ inputs.tenant_domain }}
+          TF_VAR_client_google_email: ${{ inputs.client_email }}
+          TF_VAR_user_pool_id: ${{ inputs.user_pool_id }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
+            -backend-config="dynamodb_table=${{ vars.TF_LOCK_TABLE }}" \
+            -backend-config="region=us-east-1" \
+            -backend-config="key=tenant/${{ inputs.tenant_domain }}/terraform.tfstate"
+          terraform apply -auto-approve
+          echo "### Nameservers for ${{ inputs.tenant_domain }} (point the registrar here)" >> "$GITHUB_STEP_SUMMARY"
+          terraform output -json nameservers >> "$GITHUB_STEP_SUMMARY"
