@@ -15,5 +15,8 @@
   },
   "dependencies": {
     "@csp/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@csp/blocks": "workspace:*"
   }
 }

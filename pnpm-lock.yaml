@@ -35,6 +35,10 @@ importers:
       '@csp/core':
         specifier: workspace:*
         version: link:../../../packages/core
+    devDependencies:
+      '@csp/blocks':
+        specifier: workspace:*
+        version: link:../../../packages/blocks
 
   packages/admin:
     dependencies:
