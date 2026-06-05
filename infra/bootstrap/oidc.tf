@@ -20,7 +20,11 @@ locals {
 
 # --- Trust policies -------------------------------------------------------------------------------
 
-# PR plan role: any workflow run in this repo (incl. pull_request) may assume it — but it is read-only.
+# Read-only plan role. Scoped to branch pushes in THIS repo only — NOT pull_request. Because a fork
+# PR and a same-repo PR share the identical OIDC subject (repo:OWNER/REPO:pull_request), the trust
+# policy cannot distinguish them; so PRs are excluded here entirely. If a PR `terraform plan` job is
+# added later, gate it in the workflow with `if: …head.repo.full_name == github.repository` (skip
+# forks) before re-allowing a pull_request subject.
 data "aws_iam_policy_document" "plan_trust" {
   statement {
     effect  = "Allow"
@@ -37,7 +41,7 @@ data "aws_iam_policy_document" "plan_trust" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["${local.repo_sub_prefix}:*"]
+      values   = ["${local.repo_sub_prefix}:ref:refs/heads/*"]
     }
   }
 }
