@@ -1,6 +1,7 @@
 import { createHandlers } from './handlers';
+import { createPreTokenHandler } from './preToken';
 import { createS3Presigner } from './presign';
-import { createDynamoStore } from './store';
+import { createDynamoStore, createTenantMap } from './store';
 
 /**
  * Lambda entry points, wired from environment variables set by `infra/shared` (#12-#15). Each export
@@ -18,3 +19,8 @@ const handlers = createHandlers({
 export const getContent = handlers.getContent;
 export const putContent = handlers.putContent;
 export const uploadsPresign = handlers.uploadsPresign;
+
+/** Cognito pre-token-generation trigger — injects custom:tenantId for federated users (#14). */
+export const preTokenGeneration = createPreTokenHandler({
+  tenantMap: createTenantMap(process.env.TENANT_MAP_TABLE ?? ''),
+});

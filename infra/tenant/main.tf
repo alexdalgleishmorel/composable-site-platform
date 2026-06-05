@@ -158,15 +158,14 @@ resource "aws_route53_record" "www" {
 }
 
 # --- Tenant mapping: allow-listed Google email -> this tenant (§8) ---------------------------------
-# Maps the client's identity to their tenantId. A pre-token-generation Lambda or mapping table may be
-# preferable for purely-federated identities; this is the doc's "custom:tenantId attribute" option.
-resource "aws_cognito_user" "client" {
-  user_pool_id   = var.user_pool_id
-  username       = var.client_google_email
-  message_action = "SUPPRESS"
-  attributes = {
-    email             = var.client_google_email
-    email_verified    = "true"
-    "custom:tenantId" = var.tenant_domain
-  }
+# Written into the shared csp-tenant-map table (created by infra/shared); the pre-token Lambda reads
+# it on sign-in to inject custom:tenantId — which works for federated Google identities, unlike a
+# pre-created native user.
+resource "aws_dynamodb_table_item" "tenant_map" {
+  table_name = "csp-tenant-map"
+  hash_key   = "email"
+  item = jsonencode({
+    email    = { S = lower(var.client_google_email) }
+    tenantId = { S = var.tenant_domain }
+  })
 }

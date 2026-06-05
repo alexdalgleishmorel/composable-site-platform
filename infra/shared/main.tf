@@ -101,6 +101,11 @@ resource "aws_cognito_user_pool" "main" {
       max_length = 255
     }
   }
+
+  # Inject custom:tenantId into tokens for federated users (see pretoken.tf).
+  lambda_config {
+    pre_token_generation = aws_lambda_function.pre_token.arn
+  }
 }
 
 resource "aws_cognito_identity_provider" "google" {
@@ -177,6 +182,11 @@ resource "aws_iam_role_policy" "lambda_access" {
         Effect   = "Allow"
         Action   = ["s3:PutObject"]
         Resource = "${aws_s3_bucket.uploads.arn}/*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["dynamodb:GetItem"]
+        Resource = aws_dynamodb_table.tenant_map.arn
       },
     ]
   })

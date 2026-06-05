@@ -23,3 +23,22 @@ export function createDynamoStore(
     },
   };
 }
+
+/** Maps an allow-listed email -> tenantId. Written per-tenant by `infra/tenant`, read by the
+ * pre-token Lambda so FEDERATED (Google) users get their `custom:tenantId` claim (§8). */
+export interface TenantMap {
+  lookup(email: string): Promise<string | null>;
+}
+
+export function createTenantMap(
+  tableName: string,
+  client: DynamoDBClient = new DynamoDBClient({}),
+): TenantMap {
+  const doc = DynamoDBDocumentClient.from(client);
+  return {
+    async lookup(email) {
+      const res = await doc.send(new GetCommand({ TableName: tableName, Key: { email } }));
+      return (res.Item?.tenantId as string | undefined) ?? null;
+    },
+  };
+}
