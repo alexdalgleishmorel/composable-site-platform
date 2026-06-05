@@ -1,0 +1,263 @@
+:root {
+  --ink: #1a1a1a;
+  --mute: #767676;
+  --line: #e3e3e3;
+  --accent: #2b6cb0;
+  --danger: #c53030;
+  --ok: #2f855a;
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Arial,
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  color: var(--ink);
+  background: #fafafa;
+  font-size: 14px;
+}
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+/* sign-in */
+.signin {
+  max-width: 380px;
+  margin: 12vh auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 28px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.signin h1 {
+  margin: 0;
+}
+.signin input,
+.signin button {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+.signin button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+}
+
+/* shell */
+.admin__bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.admin__bar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.admin__muted {
+  color: var(--mute);
+}
+.admin__save {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+.admin__save:disabled {
+  opacity: 0.6;
+}
+.admin__link {
+  background: none;
+  border: none;
+  color: var(--mute);
+  text-decoration: underline;
+}
+.admin__loading {
+  padding: 40px;
+  color: var(--mute);
+}
+
+.admin__toast {
+  padding: 10px 20px;
+  font-size: 13px;
+}
+.admin__toast--ok {
+  background: #e6fffa;
+  color: var(--ok);
+}
+.admin__toast--err {
+  background: #fff5f5;
+  color: var(--danger);
+}
+
+.admin__pages {
+  display: flex;
+  gap: 6px;
+  padding: 12px 20px 0;
+}
+.admin__tab {
+  background: none;
+  border: 1px solid var(--line);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  padding: 8px 14px;
+}
+.admin__tab--active {
+  background: #fff;
+  font-weight: 600;
+}
+
+.admin__editor {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* block cards */
+.block-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.block-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  background: #f7f7f7;
+  border-radius: 8px 8px 0 0;
+}
+.block-card__type {
+  font-weight: 600;
+  font-size: 13px;
+}
+.block-card__controls button {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  width: 26px;
+  height: 26px;
+  margin-left: 4px;
+}
+.block-card__controls button:disabled {
+  opacity: 0.35;
+}
+
+.add-block {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+}
+.add-block__btn {
+  border: 1px dashed var(--accent);
+  color: var(--accent);
+  background: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+
+/* shared EditForm primitives (csp-* hooks emitted by @csp/blocks) */
+.csp-block-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+.csp-block-form__row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.csp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.csp-field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.csp-field__label {
+  font-size: 12px;
+  color: var(--mute);
+}
+.csp-input {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+  width: 100%;
+}
+.csp-input--multiline {
+  resize: vertical;
+}
+.csp-input--readonly {
+  background: #f3f3f3;
+  color: var(--mute);
+}
+.csp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.csp-list__row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.csp-list__body {
+  flex: 1;
+}
+.csp-row-controls {
+  display: flex;
+  gap: 2px;
+}
+.csp-btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+.csp-btn--icon {
+  width: 28px;
+}
+.csp-btn--danger {
+  color: var(--danger);
+}
+.csp-btn--add {
+  border-style: dashed;
+  color: var(--accent);
+  align-self: flex-start;
+}
+.csp-btn:disabled {
+  opacity: 0.35;
+}
