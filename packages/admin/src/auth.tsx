@@ -20,8 +20,8 @@ const AuthContext = createContext<AuthValue | null>(null);
  * stand-in for dev and tests.
  */
 export const DEFAULT_ALLOWLIST: Record<string, string> = {
-  'jack.dalgleishmorel@live.ca': 'jmdm.org',
-  'alex.dalgleishmorel@gmail.com': 'jmdm.org',
+  'jack.dalgleishmorel@gmail.com': 'jmdm.studio',
+  'alex.dalgleishmorel@gmail.com': 'jmdm.studio',
 };
 
 export function AuthProvider({
