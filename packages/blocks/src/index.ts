@@ -20,6 +20,16 @@ export * from './contract';
 export * from './registry';
 export * from './validate';
 
+// Image upload for EditForms — the admin injects the transport (presign + S3 PUT, #15/#20).
+export {
+  UploaderProvider,
+  useUploader,
+  UploadButton,
+  ImageField,
+  ImageListField,
+  type Uploader,
+} from './ui/upload';
+
 export { richText, projectGrid, shop, entryList, noteCards, shopNotes };
 export type { RichTextData } from './blocks/richText';
 export type { ProjectGridData, Project } from './blocks/projectGrid';

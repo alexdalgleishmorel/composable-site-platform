@@ -1,5 +1,6 @@
 import type { EditFormComponent } from '../../contract';
 import { ListEditor, StringListField, TextAreaField, TextField } from '../../ui/fields';
+import { ImageListField } from '../../ui/upload';
 import { newProject, type Project, type ProjectGridData } from './schema';
 
 /** Keep each project's `order` in sync with its position after add/remove/reorder. */
@@ -32,7 +33,7 @@ export const ProjectGridEditForm: EditFormComponent<ProjectGridData> = ({ data, 
             placeholder="Full description"
             onChange={(body) => update({ body: body || undefined })}
           />
-          <StringListField
+          <ImageListField
             label="Image URLs"
             values={project.images}
             addLabel="image"

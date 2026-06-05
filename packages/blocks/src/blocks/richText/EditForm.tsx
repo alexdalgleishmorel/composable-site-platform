@@ -1,5 +1,6 @@
 import type { EditFormComponent } from '../../contract';
 import { StringListField, TextField } from '../../ui/fields';
+import { ImageField } from '../../ui/upload';
 import type { RichTextData } from './schema';
 
 export const RichTextEditForm: EditFormComponent<RichTextData> = ({ data, onChange }) => (
@@ -18,7 +19,7 @@ export const RichTextEditForm: EditFormComponent<RichTextData> = ({ data, onChan
       placeholder="A paragraph of text"
       onChange={(paragraphs) => onChange({ ...data, paragraphs })}
     />
-    <TextField
+    <ImageField
       label="Image URL"
       value={data.image}
       placeholder="https://cdn…/image.jpg"

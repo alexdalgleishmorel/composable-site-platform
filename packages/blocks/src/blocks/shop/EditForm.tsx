@@ -1,12 +1,6 @@
 import type { EditFormComponent } from '../../contract';
-import {
-  CheckboxField,
-  ListEditor,
-  NumberField,
-  StringListField,
-  TextAreaField,
-  TextField,
-} from '../../ui/fields';
+import { CheckboxField, ListEditor, NumberField, TextAreaField, TextField } from '../../ui/fields';
+import { ImageListField } from '../../ui/upload';
 import { newShopItem, type ShopData, type ShopItem } from './schema';
 
 const reindex = (items: ShopItem[]): ShopItem[] => items.map((it, i) => ({ ...it, order: i }));
@@ -57,7 +51,7 @@ export const ShopEditForm: EditFormComponent<ShopData> = ({ data, onChange }) =>
             checked={item.inStock}
             onChange={(inStock) => update({ inStock })}
           />
-          <StringListField
+          <ImageListField
             label="Image URLs"
             values={item.images}
             addLabel="image"
