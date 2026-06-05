@@ -126,10 +126,12 @@ resource "aws_cognito_user_pool_domain" "main" {
 }
 
 resource "aws_cognito_user_pool_client" "admin" {
-  name                                 = "csp-admin"
-  user_pool_id                         = aws_cognito_user_pool.main.id
-  supported_identity_providers         = [aws_cognito_identity_provider.google.provider_name]
-  callback_urls                        = var.admin_callback_urls
+  name                         = "csp-admin"
+  user_pool_id                 = aws_cognito_user_pool.main.id
+  supported_identity_providers = [aws_cognito_identity_provider.google.provider_name]
+  # The hosted admin URL (this apply) plus any extra (e.g. localhost for dev) from the variable.
+  callback_urls                        = concat(["https://${aws_cloudfront_distribution.admin.domain_name}/"], var.admin_callback_urls)
+  logout_urls                          = ["https://${aws_cloudfront_distribution.admin.domain_name}/"]
   allowed_oauth_flows                  = ["code"]
   allowed_oauth_scopes                 = ["openid", "email", "profile"]
   allowed_oauth_flows_user_pool_client = true
