@@ -1,9 +1,15 @@
+import type { TenantContent } from '@csp/core';
 import { useState } from 'react';
 import { createMockApi, type ContentApi } from './api';
 import { AuthProvider, useAuth } from './auth';
 import { Editor } from './Editor';
+import { PreviewPane } from './PreviewPane';
 import { sampleContent } from './mockContent';
 import './admin.css';
+
+// The tenant's deployed site, embedded for live preview. Per-tenant at deploy; about:blank for local
+// dev until a preview target is configured.
+const PREVIEW_URL: string = import.meta.env.VITE_PREVIEW_URL ?? 'about:blank';
 
 function SignIn() {
   const { signIn } = useAuth();
@@ -36,7 +42,19 @@ function SignIn() {
 
 function Gate({ api }: { api: ContentApi }) {
   const { session } = useAuth();
-  return session ? <Editor api={api} /> : <SignIn />;
+  // The working document, lifted so the preview pane can mirror edits into the iframe.
+  const [working, setWorking] = useState<TenantContent | null>(null);
+  if (!session) return <SignIn />;
+  return (
+    <div className="admin-split">
+      <div className="admin-split__edit">
+        <Editor api={api} onContentChange={setWorking} />
+      </div>
+      <div className="admin-split__preview">
+        <PreviewPane previewUrl={PREVIEW_URL} content={working} />
+      </div>
+    </div>
+  );
 }
 
 export function App({ api }: { api?: ContentApi }) {
