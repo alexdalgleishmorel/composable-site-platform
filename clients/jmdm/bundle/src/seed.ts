@@ -174,7 +174,7 @@ export const jmdmSeed: TenantContent = {
     siteName: 'jmdm',
     tagline: 'Index of works',
     contactEmail: 'jack.dalgleishmorel@live.ca',
-    socialLinks: [{ label: 'instagram', url: 'https://instagram.com/jackkme' }],
+    socialLinks: [{ label: '@jackkme', url: 'https://instagram.com/jackkme' }],
     studioLocation: 'harbord village, toronto on',
     hours: 'by appointment',
   },

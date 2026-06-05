@@ -22,8 +22,9 @@ describe('jmdm bundle', () => {
 
   it('hides the shop link in nav while the shop is beta (disabled)', () => {
     renderAt('/');
-    expect(screen.queryByRole('link', { name: 'shop' })).toBeNull();
-    expect(screen.getByRole('link', { name: 'about' })).toBeTruthy();
+    // nav is rendered twice (masthead + mini-nav), so query *all*.
+    expect(screen.queryAllByRole('link', { name: 'shop' })).toHaveLength(0);
+    expect(screen.getAllByRole('link', { name: 'about' }).length).toBeGreaterThan(0);
   });
 
   it('renders the about page: bio, CV, and currently', () => {
@@ -48,6 +49,7 @@ describe('jmdm bundle', () => {
   it('renders a shop item detail with a formatted CAD price', () => {
     renderAt('/shop/lemon-bowl');
     expect(screen.getByRole('heading', { name: /Lemon Bowl/i })).toBeTruthy();
-    expect(screen.getByText(/\$140 CAD/)).toBeTruthy();
+    expect(screen.getByText('$140')).toBeTruthy();
+    expect(screen.getAllByText('CAD').length).toBeGreaterThan(0);
   });
 });
