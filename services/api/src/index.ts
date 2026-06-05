@@ -1,8 +1,20 @@
+import { createHandlers } from './handlers';
+import { createS3Presigner } from './presign';
+import { createDynamoStore } from './store';
+
 /**
- * @csp/api — Lambda handlers behind the API Gateway HTTP API.
- *
- * Content CRUD (`GET`/`PUT /content`) lands in #13, the Cognito JWT authorizer in #14, presigned
- * uploads in #15, and the (deferred) Stripe checkout + webhook in #16. The handlers validate against
- * the shared registry in `@csp/blocks`. Stubbed for now.
+ * Lambda entry points, wired from environment variables set by `infra/shared` (#12-#15). Each export
+ * is an API Gateway HTTP API integration target. The shared backend is deployed once and untouched
+ * per client.
  */
-export const API_PACKAGE = '@csp/api';
+const handlers = createHandlers({
+  store: createDynamoStore(process.env.CONTENT_TABLE ?? ''),
+  presigner: createS3Presigner({
+    bucket: process.env.UPLOAD_BUCKET ?? '',
+    cdnBase: process.env.CDN_BASE_URL ?? '',
+  }),
+});
+
+export const getContent = handlers.getContent;
+export const putContent = handlers.putContent;
+export const uploadsPresign = handlers.uploadsPresign;
