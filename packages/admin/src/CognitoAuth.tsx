@@ -37,7 +37,8 @@ function CognitoGate() {
   }
 
   const profile = auth.user?.profile;
-  const tenantId = profile?.['custom:tenantId'] as string | undefined;
+  // The pre-token Lambda adds the claim in both forms (#14); accept either.
+  const tenantId = (profile?.['custom:tenantId'] ?? profile?.['tenantId']) as string | undefined;
   const email = profile?.email ?? '';
   if (!tenantId) {
     return (
