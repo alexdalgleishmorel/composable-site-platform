@@ -1,9 +1,8 @@
 /**
- * @csp/core — shared types and the API client.
+ * @csp/core — shared types and (later) the API client.
  *
- * The `TenantContent` envelope types (site -> pages -> blocks) and the typed API client land in
- * issue #5. This module currently exposes only the package identity and a couple of shared guards
- * so the rest of the monorepo has something to import.
+ * Holds the `TenantContent` envelope contract (site -> pages -> blocks) used by every other package.
+ * Per-block `data` validation lives in `@csp/blocks`, which reads these envelope schemas.
  */
 
 export const CORE_PACKAGE = '@csp/core';
@@ -12,3 +11,6 @@ export const CORE_PACKAGE = '@csp/core';
 export function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0;
 }
+
+export * from './content';
+export * from './ids';

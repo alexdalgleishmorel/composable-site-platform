@@ -1,14 +1,20 @@
 /**
  * @csp/blocks — the shared block registry.
  *
- * The `BlockType<T>` contract (`type`, `schema`, `EditForm`, optional per-type validator) and the
- * `register()` API land in issue #5; the MVP block modules (richText, projectGrid, shop, entryList,
- * noteCards, shopNotes) follow in #6-#11. This stub imports from `@csp/core` to verify cross-package
- * resolution across the workspace.
+ * The default export `registry` is the full registry including EditForms (used by the admin app and,
+ * for types only, by client bundles). The MVP block modules register here as they land (#6-#11):
+ * richText, projectGrid, shop, entryList, noteCards, shopNotes.
+ *
+ * Backend code should import the React-free surface from `@csp/blocks/schemas` instead, to keep
+ * React out of the Lambda bundle.
  */
-import { CORE_PACKAGE } from '@csp/core';
+import { BlockRegistry } from './registry';
+
+export * from './contract';
+export * from './registry';
+export * from './validate';
 
 export const BLOCKS_PACKAGE = '@csp/blocks';
 
-/** Proves the workspace dependency on `@csp/core` resolves at type- and run-time. */
-export const DEPENDS_ON = CORE_PACKAGE;
+/** The shared registry. Block modules call `registry.register(...)` as they are added. */
+export const registry = new BlockRegistry();
