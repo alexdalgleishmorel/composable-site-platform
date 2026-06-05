@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.turbo/
+pnpm-lock.yaml
+clients/*/design/
+# Source-of-truth brief and ADRs are authored prose — don't reflow them.
+docs/
+**/*.tfstate
+**/*.tfstate.*
