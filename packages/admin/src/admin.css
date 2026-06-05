@@ -261,3 +261,44 @@ button {
 .csp-btn:disabled {
   opacity: 0.35;
 }
+
+/* editor + live preview split */
+.admin-split {
+  display: grid;
+  grid-template-columns: minmax(420px, 1fr) 1fr;
+  min-height: 100vh;
+}
+@media (max-width: 1000px) {
+  .admin-split {
+    grid-template-columns: 1fr;
+  }
+}
+.admin-split__edit {
+  border-right: 1px solid var(--line);
+  overflow: auto;
+}
+.admin-split__preview {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.preview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.preview__bar {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+  font-size: 12px;
+  text-transform: lowercase;
+}
+.preview__frame {
+  flex: 1;
+  border: 0;
+  width: 100%;
+  background: #fff;
+}
