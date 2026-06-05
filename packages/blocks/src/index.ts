@@ -13,18 +13,20 @@ import { noteCards } from './blocks/noteCards';
 import { projectGrid } from './blocks/projectGrid';
 import { richText } from './blocks/richText';
 import { shop } from './blocks/shop';
+import { shopNotes } from './blocks/shopNotes';
 import { BlockRegistry } from './registry';
 
 export * from './contract';
 export * from './registry';
 export * from './validate';
 
-export { richText, projectGrid, shop, entryList, noteCards };
+export { richText, projectGrid, shop, entryList, noteCards, shopNotes };
 export type { RichTextData } from './blocks/richText';
 export type { ProjectGridData, Project } from './blocks/projectGrid';
 export type { ShopData, ShopItem } from './blocks/shop';
 export type { EntryListData, Entry } from './blocks/entryList';
 export type { NoteCardsData, NoteCard } from './blocks/noteCards';
+export type { ShopNotesData, ShopNote } from './blocks/shopNotes';
 
 export const BLOCKS_PACKAGE = '@csp/blocks';
 
@@ -34,4 +36,5 @@ export const registry = new BlockRegistry()
   .register(projectGrid)
   .register(shop)
   .register(entryList)
-  .register(noteCards);
+  .register(noteCards)
+  .register(shopNotes);
