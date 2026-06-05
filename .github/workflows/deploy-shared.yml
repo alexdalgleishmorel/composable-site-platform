@@ -1,0 +1,51 @@
+name: Deploy shared backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/shared/**'
+      - 'services/api/**'
+      - 'packages/blocks/**'
+      - 'packages/core/**'
+  workflow_dispatch:
+
+permissions:
+  id-token: write # assume the deploy role via OIDC
+  contents: read
+
+concurrency: deploy-shared
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production # gated; holds the role ARN + Google secrets
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Bundle Lambda (React-free)
+        run: pnpm --filter @csp/api bundle
+
+      - name: Assume AWS deploy role (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - uses: hashicorp/setup-terraform@v3
+      - name: Terraform apply
+        working-directory: infra/shared
+        env:
+          TF_VAR_google_client_id: ${{ secrets.GOOGLE_CLIENT_ID }}
+          TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
+            -backend-config="dynamodb_table=${{ vars.TF_LOCK_TABLE }}" \
+            -backend-config="region=us-east-1"
+          terraform apply -auto-approve
