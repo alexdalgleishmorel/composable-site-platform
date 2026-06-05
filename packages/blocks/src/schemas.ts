@@ -7,6 +7,7 @@
  */
 import { projectGridSchema } from './blocks/projectGrid/schema';
 import { richTextSchema } from './blocks/richText/schema';
+import { shopSchema, validateShop, type ShopData } from './blocks/shop/schema';
 import type { ContentValidators } from './validate';
 
 export { validateContent } from './validate';
@@ -17,6 +18,10 @@ export const contentValidators: ContentValidators = {
   schemas: {
     richText: richTextSchema,
     projectGrid: projectGridSchema,
+    shop: shopSchema,
   },
-  validators: {},
+  validators: {
+    // Stricter money validation runs after the schema parse (real money — §5).
+    shop: (data) => validateShop(data as ShopData),
+  },
 };

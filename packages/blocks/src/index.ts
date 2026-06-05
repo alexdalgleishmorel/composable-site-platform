@@ -10,17 +10,19 @@
  */
 import { projectGrid } from './blocks/projectGrid';
 import { richText } from './blocks/richText';
+import { shop } from './blocks/shop';
 import { BlockRegistry } from './registry';
 
 export * from './contract';
 export * from './registry';
 export * from './validate';
 
-export { richText, projectGrid };
+export { richText, projectGrid, shop };
 export type { RichTextData } from './blocks/richText';
 export type { ProjectGridData, Project } from './blocks/projectGrid';
+export type { ShopData, ShopItem } from './blocks/shop';
 
 export const BLOCKS_PACKAGE = '@csp/blocks';
 
 /** The shared registry, assembled from the MVP block modules (#6-#11). */
-export const registry = new BlockRegistry().register(richText).register(projectGrid);
+export const registry = new BlockRegistry().register(richText).register(projectGrid).register(shop);
