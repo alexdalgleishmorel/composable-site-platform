@@ -1,3 +1,4 @@
+import { UploaderProvider } from '@csp/blocks';
 import type { TenantContent } from '@csp/core';
 import { useState } from 'react';
 import { createMockApi, type ContentApi } from './api';
@@ -5,6 +6,7 @@ import { AuthProvider, useAuth } from './auth';
 import { Editor } from './Editor';
 import { PreviewPane } from './PreviewPane';
 import { sampleContent } from './mockContent';
+import { mockUploader } from './uploader';
 import './admin.css';
 
 // The tenant's deployed site, embedded for live preview. Per-tenant at deploy; about:blank for local
@@ -46,14 +48,17 @@ function Gate({ api }: { api: ContentApi }) {
   const [working, setWorking] = useState<TenantContent | null>(null);
   if (!session) return <SignIn />;
   return (
-    <div className="admin-split">
-      <div className="admin-split__edit">
-        <Editor api={api} onContentChange={setWorking} />
+    // The uploader is injected here (mock for dev); image fields in EditForms use it via context.
+    <UploaderProvider uploader={mockUploader}>
+      <div className="admin-split">
+        <div className="admin-split__edit">
+          <Editor api={api} onContentChange={setWorking} />
+        </div>
+        <div className="admin-split__preview">
+          <PreviewPane previewUrl={PREVIEW_URL} content={working} />
+        </div>
       </div>
-      <div className="admin-split__preview">
-        <PreviewPane previewUrl={PREVIEW_URL} content={working} />
-      </div>
-    </div>
+    </UploaderProvider>
   );
 }
 
