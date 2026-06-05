@@ -12,11 +12,27 @@ export interface ContentApi {
   putContent(content: TenantContent): Promise<SaveResult>;
 }
 
-/** Real transport against the deployed HTTP API (Cognito JWT in the Authorization header). */
-export function createHttpApi(baseUrl: string, getToken: () => string | null): ContentApi {
+/**
+ * Real transport against the deployed HTTP API (Cognito JWT in the Authorization header). `GET` is
+ * tenant-scoped via `?tenant=` (the API is called cross-origin, so Host can't identify the tenant); a
+ * fresh tenant with no content yet starts from an empty document the editor can populate.
+ */
+export function createHttpApi(
+  baseUrl: string,
+  tenantId: string,
+  getToken: () => string | null,
+): ContentApi {
   return {
     async getContent() {
-      const res = await fetch(`${baseUrl}/content`);
+      const res = await fetch(`${baseUrl}/content?tenant=${encodeURIComponent(tenantId)}`);
+      if (res.status === 404) {
+        return {
+          tenantId,
+          siteMeta: { siteName: tenantId },
+          pages: [],
+          updatedAt: new Date().toISOString(),
+        };
+      }
       if (!res.ok) throw new Error(`GET /content failed: ${res.status}`);
       return (await res.json()) as TenantContent;
     },
