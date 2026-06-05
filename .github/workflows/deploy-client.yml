@@ -1,0 +1,49 @@
+name: Deploy client bundle
+
+on:
+  workflow_dispatch:
+    inputs:
+      client:
+        description: 'Client folder under clients/<client>/bundle'
+        required: true
+        default: jmdm
+      s3_bucket:
+        description: 'Tenant site bucket (infra/tenant output site_bucket)'
+        required: true
+      distribution_id:
+        description: 'Tenant CloudFront distribution id (infra/tenant output)'
+        required: true
+      api_base_url:
+        description: 'Shared API base URL (infra/shared output api_base_url)'
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build bundle
+        env:
+          VITE_API_BASE_URL: ${{ inputs.api_base_url }}
+        run: pnpm --filter "./clients/${{ inputs.client }}/bundle" build
+
+      - name: Assume AWS deploy role (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+      - name: Sync to S3 and invalidate CloudFront
+        run: |
+          aws s3 sync "clients/${{ inputs.client }}/bundle/dist" "s3://${{ inputs.s3_bucket }}" --delete
+          aws cloudfront create-invalidation --distribution-id "${{ inputs.distribution_id }}" --paths "/*"
