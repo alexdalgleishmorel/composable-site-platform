@@ -3,8 +3,21 @@ locals {
 }
 
 # --- DNS (the piece you must control to host the site, §9) -----------------------------------------
+# With Route 53 Domains the hosted zone is auto-created at registration (and the domain's nameservers
+# already point at it), so reference it by default. manage_zone=true creates it instead.
 resource "aws_route53_zone" "this" {
-  name = var.tenant_domain
+  count = var.manage_zone ? 1 : 0
+  name  = var.tenant_domain
+}
+
+data "aws_route53_zone" "this" {
+  count = var.manage_zone ? 0 : 1
+  name  = var.tenant_domain
+}
+
+locals {
+  zone_id     = var.manage_zone ? aws_route53_zone.this[0].zone_id : data.aws_route53_zone.this[0].zone_id
+  nameservers = var.manage_zone ? aws_route53_zone.this[0].name_servers : data.aws_route53_zone.this[0].name_servers
 }
 
 # --- TLS: ACM cert in us-east-1 (required by CloudFront), DNS-validated -----------------------------
@@ -26,7 +39,7 @@ resource "aws_route53_record" "cert_validation" {
       record = dvo.resource_record_value
     }
   }
-  zone_id         = aws_route53_zone.this.zone_id
+  zone_id         = local.zone_id
   name            = each.value.name
   type            = each.value.type
   records         = [each.value.record]
@@ -123,7 +136,7 @@ resource "aws_s3_bucket_policy" "site" {
 
 # --- Alias records: apex + www -> CloudFront -------------------------------------------------------
 resource "aws_route53_record" "apex" {
-  zone_id = aws_route53_zone.this.zone_id
+  zone_id = local.zone_id
   name    = var.tenant_domain
   type    = "A"
   alias {
@@ -134,7 +147,7 @@ resource "aws_route53_record" "apex" {
 }
 
 resource "aws_route53_record" "www" {
-  zone_id = aws_route53_zone.this.zone_id
+  zone_id = local.zone_id
   name    = "www.${var.tenant_domain}"
   type    = "A"
   alias {

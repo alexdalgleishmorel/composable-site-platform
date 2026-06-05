@@ -294,3 +294,6 @@ export const jmdmSeed: TenantContent = {
   ],
   updatedAt: '2026-06-05T00:00:00.000Z',
 };
+
+/** Convention: every client bundle exports its seed as `seed` so the onboard seeder can load it. */
+export const seed = jmdmSeed;
