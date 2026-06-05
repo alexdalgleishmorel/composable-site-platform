@@ -8,6 +8,8 @@ the keyless OIDC role.
   `POST /uploads/presign`) with a Cognito **JWT authorizer** on the admin routes — #13
 - **Cognito** user pool + `custom:tenantId` + **Google IdP** + hosted domain + admin app client — #14
 - **S3 uploads** bucket (private, CORS for presigned PUT) + **CloudFront** (OAC) for serving — #15
+- **Shared admin app** hosting (private S3 + CloudFront) + the Cognito callback URL wired to it — #14;
+  `deploy-shared` builds the admin with the pool/client/api outputs and syncs it
 
 ## Apply (CI does this; manual form)
 

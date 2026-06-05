@@ -39,6 +39,7 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v3
       - name: Terraform apply
+        id: tf
         working-directory: infra/shared
         env:
           TF_VAR_google_client_id: ${{ secrets.GOOGLE_CLIENT_ID }}
@@ -52,3 +53,22 @@ jobs:
             -backend-config="dynamodb_table=${{ vars.TF_LOCK_TABLE }}" \
             -backend-config="region=us-east-1"
           terraform apply -auto-approve
+          {
+            echo "api_base_url=$(terraform output -raw api_base_url)"
+            echo "user_pool_id=$(terraform output -raw user_pool_id)"
+            echo "client_id=$(terraform output -raw user_pool_client_id)"
+            echo "admin_bucket=$(terraform output -raw admin_bucket)"
+            echo "admin_distribution=$(terraform output -raw admin_distribution_id)"
+            echo "admin_url=$(terraform output -raw admin_url)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and deploy the shared admin app
+        env:
+          VITE_API_BASE_URL: ${{ steps.tf.outputs.api_base_url }}
+          VITE_COGNITO_AUTHORITY: https://cognito-idp.us-east-1.amazonaws.com/${{ steps.tf.outputs.user_pool_id }}
+          VITE_COGNITO_CLIENT_ID: ${{ steps.tf.outputs.client_id }}
+        run: |
+          pnpm --filter @csp/admin build
+          aws s3 sync packages/admin/dist "s3://${{ steps.tf.outputs.admin_bucket }}" --delete
+          aws cloudfront create-invalidation --distribution-id "${{ steps.tf.outputs.admin_distribution }}" --paths "/*"
+          echo "### Shared admin: ${{ steps.tf.outputs.admin_url }}" >> "$GITHUB_STEP_SUMMARY"

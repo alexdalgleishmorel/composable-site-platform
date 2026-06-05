@@ -26,3 +26,16 @@ output "user_pool_client_id" {
 output "cognito_domain" {
   value = "${aws_cognito_user_pool_domain.main.domain}.auth.${var.aws_region}.amazoncognito.com"
 }
+
+output "admin_url" {
+  description = "The shared admin app URL (clients sign in here)."
+  value       = "https://${aws_cloudfront_distribution.admin.domain_name}"
+}
+
+output "admin_bucket" {
+  value = aws_s3_bucket.admin.bucket
+}
+
+output "admin_distribution_id" {
+  value = aws_cloudfront_distribution.admin.id
+}
