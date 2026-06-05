@@ -2,7 +2,7 @@ import { registry } from '@csp/blocks';
 import { newId, type Block, type TenantContent } from '@csp/core';
 import { useEffect, useState } from 'react';
 import type { ContentApi, SaveResult } from './api';
-import { useAuth } from './auth';
+import { useSession } from './session';
 
 const reindex = (blocks: Block[]): Block[] => blocks.map((b, i) => ({ ...b, order: i }));
 
@@ -19,7 +19,7 @@ export function Editor({
   api: ContentApi;
   onContentChange?: (content: TenantContent) => void;
 }) {
-  const { session, signOut } = useAuth();
+  const session = useSession();
   const [content, setContentState] = useState<TenantContent | null>(null);
   const [pageIndex, setPageIndex] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -84,11 +84,11 @@ export function Editor({
           <span className="admin__muted">· {content.tenantId}</span>
         </div>
         <div className="admin__bar-right">
-          <span className="admin__muted">{session?.email}</span>
+          <span className="admin__muted">{session.email}</span>
           <button className="admin__save" onClick={save} disabled={saving}>
             {saving ? 'Saving…' : 'Save'}
           </button>
-          <button className="admin__link" onClick={signOut}>
+          <button className="admin__link" onClick={session.signOut}>
             sign out
           </button>
         </div>
