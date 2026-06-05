@@ -2,7 +2,7 @@ import type { Project, ShopItem } from '@csp/blocks';
 import type { TenantContent } from '@csp/core';
 
 /**
- * The jmdm.org content seed (issue #23) — the wireframe's `data.js` (CATALOG / CV / CURRENTLY /
+ * The jmdm.studio content seed (issue #23) — the wireframe's `data.js` (CATALOG / CV / CURRENTLY /
  * SHOPNOTES / CONTACT) reconstructed on the block model.
  *
  * - The home index ("/") is a `projectGrid` of every work.
@@ -169,7 +169,7 @@ const shopItems: ShopItem[] = [
 }));
 
 export const jmdmSeed: TenantContent = {
-  tenantId: 'jmdm.org',
+  tenantId: 'jmdm.studio',
   siteMeta: {
     siteName: 'jmdm',
     tagline: 'Index of works',
