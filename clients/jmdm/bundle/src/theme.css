@@ -474,10 +474,19 @@ button {
 }
 .currently-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  /* min(220px, 100%) caps each column at the container width so auto-fit can't inflate the parent
+     grid to N×220 (which overflowed the page on mobile). */
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   gap: 24px;
   font-size: 13px;
   line-height: 1.55;
+}
+/* grid items default to min-width:auto (min-content), which can force horizontal overflow — let the
+   about columns shrink and wrap instead. */
+.about__col,
+.about__bio,
+.about__currently {
+  min-width: 0;
 }
 .currently__label {
   font-size: 11px;
@@ -485,6 +494,13 @@ button {
   text-transform: uppercase;
   color: var(--mute);
   margin-bottom: 4px;
+}
+/* spans the two middle columns of about__body on desktop; resets on mobile (see media query) */
+.about__currently {
+  grid-column: 2 / 4;
+}
+.about__currently__h {
+  margin: 40px 0 18px;
 }
 
 /* ============================ shop ============================ */
@@ -849,14 +865,22 @@ button {
   .tile__title {
     font-size: 20px;
   }
+  /* Drop the grid on mobile — plain stacked blocks can't inflate the way grid tracks (min-content /
+     auto-fit) can, which was overflowing the page to the right. */
   .about__body,
   .shop__note {
-    grid-template-columns: 1fr;
-    gap: 22px;
+    display: block;
+    padding-top: 8px;
   }
   .about__body > div:empty,
   .shop__note > div:empty {
     display: none;
+  }
+  .about__col,
+  .about__bio,
+  .about__currently,
+  .shop__note > div {
+    margin-bottom: 26px;
   }
   .about__bio {
     font-size: 16px;

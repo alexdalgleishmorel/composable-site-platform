@@ -198,7 +198,8 @@ export const jmdmSeed: TenantContent = {
             heading: 'background',
             paragraphs: [
               'Jack Dalgleish-Morel is a designer in Harbord Village, Toronto.',
-              'Bachelor of Architectural Science (with honours), TMU. Day job: digital fabrication and design with Hot Pop Factory and Custom Engineered Arts — the work that pays the rent for the lemons.',
+              'Bachelor of Architectural Science (with honours), TMU.',
+              'Day job: digital fabrication and design with Hot Pop Factory and Custom Engineered Arts — the work that pays the rent for the lemons.',
               'After hours: object, furniture, lighting, and installation work. Mostly small. Mostly slow. Available for commissions, collaborations, and unsolicited opinions about citrus.',
             ],
           },
