@@ -110,7 +110,7 @@ const ShopRender: RenderComponent<ShopData> = ({ data }) => {
 const RichTextRender: RenderComponent<RichTextData> = ({ data }) => (
   <section className="about__body">
     <div />
-    <div className="about__col about__bio" style={{ gridColumn: '2 / 4' }}>
+    <div className="about__col about__bio about__currently">
       {data.heading && <h4 className="about__col__h">{data.heading}</h4>}
       {data.image && <img src={data.image} alt="" style={{ maxWidth: '100%', marginBottom: 16 }} />}
       {data.paragraphs.map((p, i) => (
@@ -140,7 +140,7 @@ export function CvRows({ entries }: { entries: EntryListData['entries'] }) {
 const EntryListRender: RenderComponent<EntryListData> = ({ data }) => (
   <section className="about__body">
     <div />
-    <div className="about__col" style={{ gridColumn: '2 / 4' }}>
+    <div className="about__col about__currently">
       {data.heading && <h4 className="about__col__h">{data.heading}</h4>}
       <CvRows entries={data.entries} />
     </div>
@@ -163,7 +163,7 @@ export function CurrentlyCards({ cards }: { cards: NoteCardsData['cards'] }) {
 
 const NoteCardsRender: RenderComponent<NoteCardsData> = ({ data }) => (
   <section className="about__body">
-    <div style={{ gridColumn: '2 / 4' }}>
+    <div className="about__currently">
       {data.heading && <h4 className="about__col__h">{data.heading}</h4>}
       <CurrentlyCards cards={data.cards} />
     </div>

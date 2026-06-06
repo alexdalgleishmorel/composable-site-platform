@@ -109,8 +109,8 @@ export function About() {
         <div />
         <div />
         {currently && (
-          <div style={{ gridColumn: '2 / 4' }}>
-            <h4 className="about__col__h" style={{ margin: '40px 0 18px' }}>
+          <div className="about__currently">
+            <h4 className="about__col__h about__currently__h">
               {currently.heading ?? 'currently'}
             </h4>
             <CurrentlyCards cards={currently.cards} />
