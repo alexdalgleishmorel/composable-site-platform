@@ -6,6 +6,7 @@
  * schema + validator are re-exported here and assembled into `contentValidators`.
  */
 import { entryListSchema } from './blocks/entryList/schema';
+import { linkListSchema } from './blocks/linkList/schema';
 import { noteCardsSchema } from './blocks/noteCards/schema';
 import { portfolioProjectsSchema } from './blocks/portfolioProject/schema';
 import { projectGridSchema } from './blocks/projectGrid/schema';
@@ -27,6 +28,7 @@ export const contentValidators: ContentValidators = {
     noteCards: noteCardsSchema,
     shopNotes: shopNotesSchema,
     portfolioProject: portfolioProjectsSchema,
+    linkList: linkListSchema,
   },
   validators: {
     // Stricter money validation runs after the schema parse (real money — §5).

@@ -10,6 +10,7 @@ const MVP_BLOCK_TYPES = [
   'noteCards',
   'shopNotes',
   'portfolioProject',
+  'linkList',
 ].sort();
 
 describe('MVP block library', () => {
