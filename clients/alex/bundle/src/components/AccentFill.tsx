@@ -2,6 +2,10 @@
 export const AccentFill = () => (
   <div
     aria-hidden
-    style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, var(--a), var(--b))' }}
+    style={{
+      width: '100%',
+      height: '100%',
+      background: 'linear-gradient(135deg, var(--a), var(--b))',
+    }}
   />
 );

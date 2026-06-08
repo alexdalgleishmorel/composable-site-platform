@@ -1,4 +1,9 @@
-import type { LinkListData, PortfolioProject, PortfolioProjectsData, RichTextData } from '@csp/blocks';
+import type {
+  LinkListData,
+  PortfolioProject,
+  PortfolioProjectsData,
+  RichTextData,
+} from '@csp/blocks';
 import type { TenantContent } from '@csp/core';
 import { createContext, useContext } from 'react';
 

@@ -13,7 +13,11 @@ vi.mock('lottie-react', () => ({
 describe('Animation', () => {
   it('renders a built-in motif by key', () => {
     const { container } = render(
-      <Animation animation={{ kind: 'builtin', key: 'pulse' }} accent="#000000" accent2="#ffffff" />,
+      <Animation
+        animation={{ kind: 'builtin', key: 'pulse' }}
+        accent="#000000"
+        accent2="#ffffff"
+      />,
     );
     expect(container.querySelector('.pulse')).toBeTruthy();
   });

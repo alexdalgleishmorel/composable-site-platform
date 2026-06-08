@@ -32,8 +32,7 @@ const projects: PortfolioProject[] = [
     id: 'mortgage',
     name: 'Mortgage Visualization App',
     headline: 'How much will my house really cost? How do lump sum payments affect my future?',
-    description:
-      'This app enables new or prospective homeowners to easily answer those questions.',
+    description: 'This app enables new or prospective homeowners to easily answer those questions.',
     links: {
       github: 'https://github.com/alexdalgleishmorel/mortgage-calculator',
       try: 'https://alexdalgleishmorel.github.io/mortgage-calculator',

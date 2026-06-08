@@ -30,9 +30,7 @@ describe('alex bundle', () => {
 
   it('opens a shareable project detail at /projects/:id', () => {
     renderAt('/projects/mortgage');
-    expect(
-      screen.getByRole('heading', { name: /Mortgage Visualization App/i }),
-    ).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Mortgage Visualization App/i })).toBeTruthy();
     expect(screen.getByText(/new or prospective homeowners/i)).toBeTruthy();
     expect(screen.getByRole('link', { name: /Try it/i })).toBeTruthy();
   });

@@ -2,10 +2,7 @@ import type { MotifProps } from './index';
 import type { CSSProperties } from 'react';
 
 export const FlowReport = ({ accent, accent2 }: MotifProps) => (
-  <div
-    className="flow-report-motif"
-    style={{ '--a': accent, '--b': accent2 } as CSSProperties}
-  >
+  <div className="flow-report-motif" style={{ '--a': accent, '--b': accent2 } as CSSProperties}>
     <div className="flow-report-panel flow-report-panel-a">
       <div className="flow-report-mini-bars">
         {Array.from({ length: 24 }).map((_, i) => (

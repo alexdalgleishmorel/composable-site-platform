@@ -2,10 +2,7 @@ import type { MotifProps } from './index';
 import type { CSSProperties } from 'react';
 
 export const Mortgage = ({ accent, accent2 }: MotifProps) => (
-  <div
-    className="mortgage-motif"
-    style={{ '--a': accent, '--b': accent2 } as CSSProperties}
-  >
+  <div className="mortgage-motif" style={{ '--a': accent, '--b': accent2 } as CSSProperties}>
     <div className="mortgage-glow mortgage-glow-a" />
     <div className="mortgage-glow mortgage-glow-b" />
 
