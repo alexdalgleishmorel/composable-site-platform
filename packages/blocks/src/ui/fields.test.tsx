@@ -40,8 +40,8 @@ describe('StringListField', () => {
     fireEvent.click(screen.getByText('+ item'));
     expect(state()).toBe('ONE|two|');
 
-    // Move the first row down.
-    fireEvent.click(screen.getAllByTitle('Move item down')[0]!);
+    // Reorder is drag-only; the grip is keyboard-operable (↓ moves a row down).
+    fireEvent.keyDown(screen.getAllByLabelText('Reorder item')[0]!, { key: 'ArrowDown' });
     expect(state()).toBe('two|ONE|');
 
     // Remove the last row.

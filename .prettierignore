@@ -3,6 +3,8 @@ dist/
 .turbo/
 pnpm-lock.yaml
 clients/*/design/
+# Vendored design-handoff bundle (prototype + authored prose) — a reference, not shipped source.
+design_handoff_knit_editor/
 # Source-of-truth brief and ADRs are authored prose — don't reflow them.
 docs/
 **/*.tfstate

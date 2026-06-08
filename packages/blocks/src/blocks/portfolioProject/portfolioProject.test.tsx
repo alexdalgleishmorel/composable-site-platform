@@ -85,7 +85,8 @@ describe('portfolioProject EditForm', () => {
       projects: [project({ id: 'a', name: 'A' }), project({ id: 'b', name: 'B', order: 1 })],
     });
 
-    fireEvent.click(screen.getAllByTitle('Move project down')[0]!); // move A below B
+    // Reorder is drag-only; the grip moves a row with ↑/↓ for keyboard users.
+    fireEvent.keyDown(screen.getAllByLabelText('Reorder project')[0]!, { key: 'ArrowDown' }); // A below B
     expect(ui.data().projects.map((p) => p.name)).toEqual(['B', 'A']);
     expect(ui.data().projects.map((p) => p.order)).toEqual([0, 1]);
   });

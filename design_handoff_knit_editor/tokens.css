@@ -1,0 +1,203 @@
+/* ============================================================
+   KNIT — Liquid-glass editor design tokens
+   Platform-level identity. Never inherits client branding.
+   ============================================================ */
+
+:root {
+  /* --- Type --- */
+  --font-ui: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* --- Accent (indigo, platform-chosen) --- */
+  --accent: #4f6bed;
+  --accent-strong: #3f59d8;
+  --accent-press: #3650c4;
+  --accent-soft: rgba(79, 107, 237, 0.12);
+  --accent-ring: rgba(79, 107, 237, 0.32);
+  --on-accent: #ffffff;
+
+  /* --- Status hues (share chroma/lightness) --- */
+  --ok: #18a571;
+  --ok-soft: rgba(24, 165, 113, 0.14);
+  --err: #e1496b;
+  --err-soft: rgba(225, 73, 107, 0.14);
+  --info: var(--accent);
+  --info-soft: var(--accent-soft);
+
+  /* --- Density (driven by Tweaks) --- */
+  --density: 1;
+  --gap-1: calc(4px * var(--density));
+  --gap-2: calc(8px * var(--density));
+  --gap-3: calc(12px * var(--density));
+  --gap-4: calc(16px * var(--density));
+  --gap-5: calc(22px * var(--density));
+  --gap-6: calc(30px * var(--density));
+  --card-pad: calc(20px * var(--density));
+  --field-pad-y: calc(11px * var(--density));
+  --field-pad-x: calc(14px * var(--density));
+
+  /* --- Radii --- */
+  --r-xs: 8px;
+  --r-sm: 11px;
+  --r-md: 16px;
+  --r-lg: 20px;
+  --r-xl: 26px;
+  --r-pill: 999px;
+
+  /* --- Glass intensity --- */
+  --glass-blur: 22px;
+  --glass-sat: 175%;
+}
+
+/* ===================== LIGHT ===================== */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --backdrop:
+    radial-gradient(60% 60% at 18% 12%, rgba(170, 150, 255, 0.40), transparent 60%),
+    radial-gradient(55% 55% at 88% 18%, rgba(120, 175, 255, 0.42), transparent 62%),
+    radial-gradient(60% 65% at 75% 92%, rgba(110, 220, 195, 0.36), transparent 62%),
+    radial-gradient(50% 50% at 30% 88%, rgba(255, 190, 220, 0.30), transparent 60%),
+    linear-gradient(160deg, #eef1f9 0%, #e8edf7 100%);
+
+  --text: #1b1d27;
+  --text-2: #4a4f63;
+  --text-3: #767c92;
+  --text-faint: #9aa0b4;
+
+  /* glass surfaces */
+  --panel: rgba(255, 255, 255, 0.58);
+  --panel-2: rgba(255, 255, 255, 0.46);
+  --panel-solid: rgba(255, 255, 255, 0.86);
+  --card: rgba(255, 255, 255, 0.52);
+  --card-hover: rgba(255, 255, 255, 0.66);
+
+  --field-bg: rgba(255, 255, 255, 0.60);
+  --field-bg-focus: rgba(255, 255, 255, 0.92);
+  --field-border: rgba(20, 24, 50, 0.10);
+  --field-border-hover: rgba(20, 24, 50, 0.18);
+
+  --hairline: rgba(20, 24, 50, 0.08);
+  --edge: rgba(255, 255, 255, 0.75);   /* faint top highlight */
+  --edge-soft: rgba(255, 255, 255, 0.45);
+
+  --shadow-sm: 0 2px 8px rgba(28, 32, 70, 0.06);
+  --shadow-md: 0 10px 30px rgba(28, 32, 70, 0.10), 0 2px 6px rgba(28, 32, 70, 0.05);
+  --shadow-lg: 0 24px 60px rgba(28, 32, 70, 0.16), 0 4px 14px rgba(28, 32, 70, 0.07);
+  --shadow-pop: 0 18px 50px rgba(28, 32, 70, 0.22);
+
+  --scrim: rgba(232, 236, 247, 0.55);
+}
+
+/* ===================== DARK ===================== */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --backdrop:
+    radial-gradient(60% 60% at 16% 10%, rgba(118, 96, 220, 0.40), transparent 60%),
+    radial-gradient(55% 58% at 90% 16%, rgba(58, 110, 210, 0.42), transparent 62%),
+    radial-gradient(60% 65% at 78% 94%, rgba(34, 150, 130, 0.34), transparent 62%),
+    radial-gradient(50% 50% at 28% 90%, rgba(150, 70, 130, 0.28), transparent 60%),
+    linear-gradient(160deg, #0f1118 0%, #14161f 100%);
+
+  --text: #f0f1f7;
+  --text-2: #b9bdcc;
+  --text-3: #888da0;
+  --text-faint: #646980;
+
+  --panel: rgba(30, 33, 46, 0.55);
+  --panel-2: rgba(26, 29, 41, 0.50);
+  --panel-solid: rgba(26, 29, 41, 0.88);
+  --card: rgba(40, 44, 60, 0.46);
+  --card-hover: rgba(48, 53, 72, 0.58);
+
+  --field-bg: rgba(16, 18, 28, 0.45);
+  --field-bg-focus: rgba(14, 16, 24, 0.72);
+  --field-border: rgba(255, 255, 255, 0.10);
+  --field-border-hover: rgba(255, 255, 255, 0.20);
+
+  --hairline: rgba(255, 255, 255, 0.08);
+  --edge: rgba(255, 255, 255, 0.16);
+  --edge-soft: rgba(255, 255, 255, 0.07);
+
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 12px 34px rgba(0, 0, 0, 0.42), 0 2px 8px rgba(0, 0, 0, 0.30);
+  --shadow-lg: 0 26px 64px rgba(0, 0, 0, 0.52), 0 6px 18px rgba(0, 0, 0, 0.34);
+  --shadow-pop: 0 22px 56px rgba(0, 0, 0, 0.55);
+
+  --accent: #6f87f4;
+  --accent-strong: #5e78ef;
+  --accent-press: #5570ea;
+  --accent-soft: rgba(111, 135, 244, 0.18);
+  --accent-ring: rgba(111, 135, 244, 0.38);
+
+  --scrim: rgba(10, 12, 18, 0.55);
+}
+
+/* ===================== Base ===================== */
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-ui);
+  color: var(--text);
+  background: var(--backdrop) fixed;
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+}
+
+#root { height: 100%; }
+
+::selection { background: var(--accent-soft); }
+
+/* Instant theme swap — no frozen transitions on theme change */
+.theme-switching, .theme-switching * { transition: none !important; }
+
+/* Glass utility */
+.glass {
+  background: var(--panel);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border: 1px solid var(--field-border);
+  box-shadow: var(--shadow-md), inset 0 1px 0 var(--edge);
+}
+
+/* Custom scrollbars */
+.scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--field-border-hover) transparent;
+}
+.scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.scroll::-webkit-scrollbar-thumb {
+  background: var(--field-border-hover);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+.scroll::-webkit-scrollbar-thumb:hover { background: var(--text-faint); background-clip: content-box; }
+
+/* Focus ring */
+.focusable:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .anim-rise { animation: riseIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+}
+/* transform-only so the resting state is fully visible even if the
+   animation clock never advances (headless capture / PDF / reduced motion) */
+@keyframes riseIn {
+  from { transform: translateY(12px) scale(0.99); }
+  to   { transform: none; }
+}

@@ -49,7 +49,9 @@ describe('image upload fields', () => {
       );
     }
     const { container } = render(<Harness />);
-    fireEvent.change(fileInput(container), { target: { files: [pngFile('b.png')] } });
+    // The "add image" dropzone owns the last file input; selecting a file there appends.
+    const inputs = container.querySelectorAll('input[type="file"]');
+    fireEvent.change(inputs[inputs.length - 1]!, { target: { files: [pngFile('b.png')] } });
 
     await waitFor(() => expect(screen.getByTestId('n').textContent).toBe('2'));
   });

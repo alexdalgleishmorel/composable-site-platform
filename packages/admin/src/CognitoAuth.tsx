@@ -2,6 +2,7 @@ import { AuthProvider, useAuth } from 'react-oidc-context';
 import { AdminWorkspace } from './AdminWorkspace';
 import { createHttpApi } from './api';
 import { SessionContext, type Session } from './session';
+import { SignIn } from './shell/SignIn';
 import { createPresignUploader } from './uploader';
 
 const AUTHORITY = import.meta.env.VITE_COGNITO_AUTHORITY as string;
@@ -18,22 +19,10 @@ function CognitoGate() {
 
   if (auth.isLoading) return <div className="admin__loading">Signing in…</div>;
   if (auth.error) {
-    return <div className="admin__toast admin__toast--err">Auth error: {auth.error.message}</div>;
+    return <div className="admin__error">Auth error: {auth.error.message}</div>;
   }
   if (!auth.isAuthenticated) {
-    return (
-      <form
-        className="signin"
-        onSubmit={(e) => {
-          e.preventDefault();
-          void auth.signinRedirect();
-        }}
-      >
-        <h1>Admin</h1>
-        <p className="admin__muted">Sign in with your Google account to edit your site.</p>
-        <button type="submit">Sign in with Google</button>
-      </form>
-    );
+    return <SignIn onGoogle={() => void auth.signinRedirect()} />;
   }
 
   const profile = auth.user?.profile;
@@ -42,7 +31,7 @@ function CognitoGate() {
   const email = profile?.email ?? '';
   if (!tenantId) {
     return (
-      <div className="admin__toast admin__toast--err">
+      <div className="admin__error">
         No tenant is mapped to {email}. Ask the platform owner for access.
       </div>
     );
