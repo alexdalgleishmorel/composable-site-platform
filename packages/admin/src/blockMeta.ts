@@ -16,6 +16,8 @@ export const BLOCK_META: Record<string, BlockMeta> = {
   shopNotes: { name: 'Shop notes', glyph: '✎', blurb: 'Fine print' },
   entryList: { name: 'Entry list', glyph: '≣', blurb: 'CV / timeline' },
   noteCards: { name: 'Note cards', glyph: '❏', blurb: 'Short notes' },
+  portfolioProject: { name: 'Portfolio project', glyph: '✦', blurb: 'Animated case studies' },
+  linkList: { name: 'Link list', glyph: '↗', blurb: 'Labelled external links' },
 };
 
 /** Meta for a type, falling back to a sensible default for unknown/legacy types. */
@@ -45,6 +47,10 @@ export function blockSummary(type: string, data: unknown): string {
       return count(len(d.cards), 'card');
     case 'shopNotes':
       return len(d.notes) ? count(len(d.notes), 'note') : 'Fine print';
+    case 'portfolioProject':
+      return count(len(d.projects), 'project');
+    case 'linkList':
+      return count(len(d.links), 'link');
     default:
       return '';
   }

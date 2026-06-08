@@ -2,12 +2,13 @@ import { createContext, useContext, useRef, useState, type ReactNode } from 'rea
 import { Field, move, StringListField, TextField } from './fields';
 
 /**
- * Image upload for EditForms. The transport is *injected* by the admin app (presign + S3 PUT, #15) so
- * the shared editing plane stays decoupled from a specific backend — and image bytes never route
- * through Lambda (§6). With no uploader in context, the fields degrade to manual URL entry.
+ * Image / asset upload for EditForms. The transport is *injected* by the admin app (presign + S3 PUT,
+ * #15) so the shared editing plane stays decoupled from a specific backend — and image bytes never
+ * route through Lambda (§6). With no uploader in context, the fields degrade to manual URL entry.
  *
- * Visually (Knit redesign) an image is a **drag-and-drop dropzone** that's also click-to-browse;
- * once set it becomes a thumbnail with Replace / Remove.
+ * Visually (Knit redesign) an image is a **drag-and-drop dropzone** that's also click-to-browse; once
+ * set it becomes a thumbnail with Replace / Remove. The `UploadButton` (URL field + button) is kept
+ * for non-image assets like Lottie JSON (`AnimationField`).
  */
 export type Uploader = (file: File) => Promise<string>;
 
@@ -154,6 +155,63 @@ function useUpload(uploader: Uploader, onUrl: (url: string) => void) {
   return { busy, error, upload };
 }
 
+/**
+ * A button that picks a file, runs it through the injected uploader, and yields a CDN URL. `accept`
+ * defaults to images but is overridable (e.g. Lottie JSON for animation uploads) — the transport is
+ * content-type agnostic (the presign endpoint signs a PUT for any type), so only the picker filter
+ * changes. With no uploader in context it renders nothing (manual URL entry only).
+ */
+export function UploadButton({
+  onUploaded,
+  label = 'upload image',
+  accept = 'image/*',
+}: {
+  onUploaded: (cdnUrl: string) => void;
+  label?: string;
+  accept?: string;
+}) {
+  const uploader = useUploader();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!uploader) return null; // manual URL entry only
+
+  return (
+    <span className="csp-upload">
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        className="csp-upload__input"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          setBusy(true);
+          setError(null);
+          try {
+            onUploaded(await uploader(file));
+          } catch (err) {
+            setError(err instanceof Error ? err.message : 'upload failed');
+          } finally {
+            setBusy(false);
+            if (inputRef.current) inputRef.current.value = '';
+          }
+        }}
+      />
+      <button
+        type="button"
+        className="csp-btn csp-btn--add"
+        disabled={busy}
+        onClick={() => inputRef.current?.click()}
+      >
+        {busy ? 'uploading…' : label}
+      </button>
+      {error && <span className="csp-upload__error">{error}</span>}
+    </span>
+  );
+}
+
 /** A single image: dropzone → upload → thumbnail. Falls back to a URL field with no uploader. */
 export function ImageField(props: {
   label: string;
@@ -177,6 +235,35 @@ export function ImageField(props: {
       {error && <span className="csp-upload__error">{error}</span>}
       {picker.input}
     </Field>
+  );
+}
+
+/**
+ * A single animation asset: a URL field plus an upload button that accepts Lottie JSON. Reuses the
+ * same injected uploader as images — animation bytes go straight to S3/CDN, never through Lambda.
+ * `accept` is overridable if a client wants to allow more formats (e.g. `image/svg+xml`).
+ */
+export function AnimationField(props: {
+  label: string;
+  value: string | undefined;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  accept?: string;
+}) {
+  return (
+    <div className="csp-image-field">
+      <TextField
+        label={props.label}
+        value={props.value}
+        onChange={props.onChange}
+        placeholder={props.placeholder ?? 'https://… .json'}
+      />
+      <UploadButton
+        label="upload animation"
+        accept={props.accept ?? '.json,.lottie,application/json'}
+        onUploaded={props.onChange}
+      />
+    </div>
   );
 }
 

@@ -311,6 +311,75 @@ export function ListEditor<T>(props: {
   );
 }
 
+/**
+ * A colour field: a native swatch picker bound to a hex text input. Both edit the same `#rrggbb`
+ * value, so a user can pick visually or paste a brand hex. The swatch falls back to black while the
+ * text is mid-edit / not yet a valid hex (a `<input type="color">` can't display a partial value).
+ */
+export function ColorField(props: {
+  label: string;
+  value: string | undefined;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}) {
+  const value = props.value ?? '';
+  const isHex = /^#([0-9a-fA-F]{6})$/.test(value);
+  return (
+    <Field label={props.label}>
+      <span className="csp-color-field">
+        <input
+          className="csp-color-field__swatch"
+          type="color"
+          aria-label={`${props.label} colour picker`}
+          value={isHex ? value : '#000000'}
+          onChange={(e) => props.onChange(e.target.value)}
+        />
+        <input
+          className="csp-input csp-color-field__hex"
+          type="text"
+          value={value}
+          placeholder={props.placeholder ?? '#000000'}
+          onChange={(e) => props.onChange(e.target.value)}
+        />
+      </span>
+    </Field>
+  );
+}
+
+/** An option for `SelectField` — a bare value (label === value) or an explicit `{ value, label }`. */
+export type SelectOption = string | { value: string; label: string };
+
+/** A labelled `<select>`. `placeholder`, when set, renders a disabled empty first option. */
+export function SelectField(props: {
+  label: string;
+  value: string | undefined;
+  options: readonly SelectOption[];
+  onChange: (value: string) => void;
+  placeholder?: string;
+}) {
+  const opts = props.options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o));
+  return (
+    <Field label={props.label}>
+      <select
+        className="csp-input csp-select"
+        value={props.value ?? ''}
+        onChange={(e) => props.onChange(e.target.value)}
+      >
+        {props.placeholder !== undefined && (
+          <option value="" disabled>
+            {props.placeholder}
+          </option>
+        )}
+        {opts.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </Field>
+  );
+}
+
 /** A list editor specialised for `string[]` (e.g. richText paragraphs). */
 export function StringListField(props: {
   label: string;

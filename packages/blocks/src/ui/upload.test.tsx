@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { ImageField, ImageListField, UploaderProvider } from './upload';
+import { AnimationField, ImageField, ImageListField, UploaderProvider } from './upload';
 
 const pngFile = (name = 'a.png') => new File(['x'], name, { type: 'image/png' });
 const fileInput = (root: HTMLElement) =>
@@ -54,5 +54,29 @@ describe('image upload fields', () => {
     fireEvent.change(inputs[inputs.length - 1]!, { target: { files: [pngFile('b.png')] } });
 
     await waitFor(() => expect(screen.getByTestId('n').textContent).toBe('2'));
+  });
+
+  it('uploads a Lottie file via AnimationField (json picker) and sets the URL', async () => {
+    const uploader = vi.fn().mockResolvedValue('https://cdn.example/anim.json');
+    function Harness() {
+      const [value, setValue] = useState<string | undefined>(undefined);
+      return (
+        <UploaderProvider uploader={uploader}>
+          <AnimationField label="Animation" value={value} onChange={setValue} />
+          <output data-testid="v">{value}</output>
+        </UploaderProvider>
+      );
+    }
+    const { container } = render(<Harness />);
+    const input = fileInput(container);
+    expect(input.getAttribute('accept')).toContain('json');
+    fireEvent.change(input, {
+      target: { files: [new File(['{}'], 'anim.json', { type: 'application/json' })] },
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('v').textContent).toBe('https://cdn.example/anim.json'),
+    );
+    expect(uploader).toHaveBeenCalledOnce();
   });
 });
