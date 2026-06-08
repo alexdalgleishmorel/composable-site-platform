@@ -27,6 +27,7 @@ export {
   UploadButton,
   ImageField,
   ImageListField,
+  AnimationField,
   type Uploader,
 } from './ui/upload';
 
