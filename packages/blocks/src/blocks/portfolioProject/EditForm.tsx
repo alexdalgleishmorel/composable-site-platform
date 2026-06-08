@@ -47,7 +47,9 @@ export const PortfolioProjectEditForm: EditFormComponent<PortfolioProjectsData> 
             label="GitHub link"
             value={project.links.github}
             placeholder="https://github.com/…"
-            onChange={(github) => update({ links: { ...project.links, github: github || undefined } })}
+            onChange={(github) =>
+              update({ links: { ...project.links, github: github || undefined } })
+            }
           />
           <TextField
             label="Demo link"
@@ -61,7 +63,11 @@ export const PortfolioProjectEditForm: EditFormComponent<PortfolioProjectsData> 
             placeholder="https://… (live app)"
             onChange={(tryUrl) => update({ links: { ...project.links, try: tryUrl || undefined } })}
           />
-          <ColorField label="Accent" value={project.accent} onChange={(accent) => update({ accent })} />
+          <ColorField
+            label="Accent"
+            value={project.accent}
+            onChange={(accent) => update({ accent })}
+          />
           <ColorField
             label="Accent 2"
             value={project.accent2}

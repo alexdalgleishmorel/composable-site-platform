@@ -45,7 +45,12 @@ export const DetailCard = ({ project, onClose }: Props) => (
           </a>
         )}
         {project.links.demo && (
-          <a className="detail-btn" href={project.links.demo} target="_blank" rel="noopener noreferrer">
+          <a
+            className="detail-btn"
+            href={project.links.demo}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <VideoIcon />
             <span>Demo Video</span>
           </a>

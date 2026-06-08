@@ -2,10 +2,7 @@ import type { MotifProps } from './index';
 import type { CSSProperties } from 'react';
 
 export const AverageCost = ({ accent, accent2 }: MotifProps) => (
-  <div
-    className="average-cost-motif"
-    style={{ '--a': accent, '--b': accent2 } as CSSProperties}
-  >
+  <div className="average-cost-motif" style={{ '--a': accent, '--b': accent2 } as CSSProperties}>
     <div className="average-cost-cards">
       <div className="average-cost-card average-cost-card-a">
         <i />

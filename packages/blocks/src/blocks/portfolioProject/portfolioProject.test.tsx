@@ -2,11 +2,7 @@ import { fireEvent, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { renderEditForm } from '../../testing/renderEditForm';
 import { portfolioProject } from './index';
-import {
-  portfolioProjectsDefault,
-  portfolioProjectsSchema,
-  type PortfolioProject,
-} from './schema';
+import { portfolioProjectsDefault, portfolioProjectsSchema, type PortfolioProject } from './schema';
 
 const project = (over: Partial<PortfolioProject> = {}): PortfolioProject => ({
   id: 'p1',
@@ -33,9 +29,9 @@ describe('portfolioProject schema', () => {
   });
 
   it('rejects bad hex, bad link urls, an unknown motif key, and a non-url lottie', () => {
-    expect(portfolioProjectsSchema.safeParse({ projects: [project({ accent: 'blue' })] }).success).toBe(
-      false,
-    );
+    expect(
+      portfolioProjectsSchema.safeParse({ projects: [project({ accent: 'blue' })] }).success,
+    ).toBe(false);
     expect(
       portfolioProjectsSchema.safeParse({ projects: [project({ links: { github: 'nope' } })] })
         .success,
