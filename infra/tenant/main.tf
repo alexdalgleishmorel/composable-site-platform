@@ -135,10 +135,14 @@ resource "aws_s3_bucket_policy" "site" {
 }
 
 # --- Alias records: apex + www -> CloudFront -------------------------------------------------------
+# allow_overwrite so onboarding can *adopt* a domain that already resolves elsewhere (e.g. apex/www
+# A or CNAME records left by a prior host like GitHub Pages): the cutover is then an atomic UPSERT to
+# CloudFront rather than a "record already exists" failure — and zero-downtime.
 resource "aws_route53_record" "apex" {
-  zone_id = local.zone_id
-  name    = var.tenant_domain
-  type    = "A"
+  zone_id         = local.zone_id
+  name            = var.tenant_domain
+  type            = "A"
+  allow_overwrite = true
   alias {
     name                   = aws_cloudfront_distribution.site.domain_name
     zone_id                = aws_cloudfront_distribution.site.hosted_zone_id
@@ -147,9 +151,10 @@ resource "aws_route53_record" "apex" {
 }
 
 resource "aws_route53_record" "www" {
-  zone_id = local.zone_id
-  name    = "www.${var.tenant_domain}"
-  type    = "A"
+  zone_id         = local.zone_id
+  name            = "www.${var.tenant_domain}"
+  type            = "A"
+  allow_overwrite = true
   alias {
     name                   = aws_cloudfront_distribution.site.domain_name
     zone_id                = aws_cloudfront_distribution.site.hosted_zone_id
