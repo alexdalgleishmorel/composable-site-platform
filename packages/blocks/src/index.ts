@@ -9,6 +9,7 @@
  * React out of the Lambda bundle.
  */
 import { entryList } from './blocks/entryList';
+import { linkList } from './blocks/linkList';
 import { noteCards } from './blocks/noteCards';
 import { portfolioProject } from './blocks/portfolioProject';
 import { projectGrid } from './blocks/projectGrid';
@@ -32,7 +33,7 @@ export {
   type Uploader,
 } from './ui/upload';
 
-export { richText, projectGrid, shop, entryList, noteCards, shopNotes, portfolioProject };
+export { richText, projectGrid, shop, entryList, noteCards, shopNotes, portfolioProject, linkList };
 export type { RichTextData } from './blocks/richText';
 export type { ProjectGridData, Project } from './blocks/projectGrid';
 export type { ShopData, ShopItem } from './blocks/shop';
@@ -47,6 +48,7 @@ export type {
   BuiltinMotifKey,
 } from './blocks/portfolioProject';
 export { builtinMotifKeys } from './blocks/portfolioProject';
+export type { LinkListData, Link } from './blocks/linkList';
 
 export const BLOCKS_PACKAGE = '@csp/blocks';
 
@@ -58,4 +60,5 @@ export const registry = new BlockRegistry()
   .register(entryList)
   .register(noteCards)
   .register(shopNotes)
-  .register(portfolioProject);
+  .register(portfolioProject)
+  .register(linkList);
