@@ -24,13 +24,20 @@ export function useUploader(): Uploader | null {
   return useContext(UploaderContext);
 }
 
-/** A button that picks an image file, runs it through the injected uploader, and yields a CDN URL. */
+/**
+ * A button that picks a file, runs it through the injected uploader, and yields a CDN URL. `accept`
+ * defaults to images but is overridable (e.g. Lottie JSON for animation uploads) — the transport is
+ * content-type agnostic (the presign endpoint signs a PUT for any type), so only the picker filter
+ * changes.
+ */
 export function UploadButton({
   onUploaded,
   label = 'upload image',
+  accept = 'image/*',
 }: {
   onUploaded: (cdnUrl: string) => void;
   label?: string;
+  accept?: string;
 }) {
   const uploader = useUploader();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -44,7 +51,7 @@ export function UploadButton({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept={accept}
         style={{ display: 'none' }}
         onChange={async (e) => {
           const file = e.target.files?.[0];
@@ -85,6 +92,35 @@ export function ImageField(props: {
     <div className="csp-image-field">
       <TextField {...props} />
       <UploadButton onUploaded={props.onChange} />
+    </div>
+  );
+}
+
+/**
+ * A single animation asset: a URL field plus an upload button that accepts Lottie JSON. Reuses the
+ * same injected uploader as images — animation bytes go straight to S3/CDN, never through Lambda.
+ * `accept` is overridable if a client wants to allow more formats (e.g. `image/svg+xml`).
+ */
+export function AnimationField(props: {
+  label: string;
+  value: string | undefined;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  accept?: string;
+}) {
+  return (
+    <div className="csp-image-field">
+      <TextField
+        label={props.label}
+        value={props.value}
+        onChange={props.onChange}
+        placeholder={props.placeholder ?? 'https://… .json'}
+      />
+      <UploadButton
+        label="upload animation"
+        accept={props.accept ?? '.json,.lottie,application/json'}
+        onUploaded={props.onChange}
+      />
     </div>
   );
 }
