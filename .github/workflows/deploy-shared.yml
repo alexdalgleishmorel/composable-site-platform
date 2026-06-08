@@ -21,9 +21,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: production # gated; holds the role ARN + Google secrets
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: pnpm
@@ -32,12 +32,12 @@ jobs:
         run: pnpm --filter @csp/api bundle
 
       - name: Assume AWS deploy role (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: us-east-1
 
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v4
       - name: Terraform apply
         id: tf
         working-directory: infra/shared
