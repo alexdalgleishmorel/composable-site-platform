@@ -209,7 +209,7 @@ resource "aws_lambda_function" "api" {
   for_each         = local.handlers
   function_name    = "csp-${replace(each.key, "_", "-")}"
   role             = aws_iam_role.lambda.arn
-  runtime          = "nodejs20.x"
+  runtime          = "nodejs22.x"
   handler          = each.value
   filename         = data.archive_file.api.output_path
   source_code_hash = data.archive_file.api.output_base64sha256

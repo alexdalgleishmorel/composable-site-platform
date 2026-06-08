@@ -18,7 +18,7 @@ resource "aws_dynamodb_table" "tenant_map" {
 resource "aws_lambda_function" "pre_token" {
   function_name    = "csp-pre-token"
   role             = aws_iam_role.lambda.arn
-  runtime          = "nodejs20.x"
+  runtime          = "nodejs22.x"
   handler          = "index.preTokenGeneration"
   filename         = data.archive_file.api.output_path
   source_code_hash = data.archive_file.api.output_base64sha256
