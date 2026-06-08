@@ -24,7 +24,6 @@ export * from './validate';
 export {
   UploaderProvider,
   useUploader,
-  UploadButton,
   ImageField,
   ImageListField,
   type Uploader,

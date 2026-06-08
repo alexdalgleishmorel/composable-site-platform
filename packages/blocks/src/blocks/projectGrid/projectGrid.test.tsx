@@ -52,7 +52,8 @@ describe('projectGrid EditForm', () => {
       projects: [project({ id: 'a', title: 'A' }), project({ id: 'b', title: 'B', order: 1 })],
     });
 
-    fireEvent.click(screen.getAllByTitle('Move project down')[0]!); // move A below B
+    // Reorder is drag-only; the grip moves a row with ↑/↓ for keyboard users.
+    fireEvent.keyDown(screen.getAllByLabelText('Reorder project')[0]!, { key: 'ArrowDown' }); // A below B
     const titles = ui.data().projects.map((p) => p.title);
     const orders = ui.data().projects.map((p) => p.order);
     expect(titles).toEqual(['B', 'A']);

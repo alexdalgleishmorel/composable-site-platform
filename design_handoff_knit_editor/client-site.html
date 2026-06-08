@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>jmdm — index of works</title>
+<style>
+  /* ============================================================
+     CLIENT SITE: jmdm.studio
+     This is ONE example customer's public website. Its look —
+     lemon yellow, Arial, catalogue grid — belongs to the client,
+     NOT to the Knit editor. Knit only frames it. Do not restyle.
+     ============================================================ */
+  :root { --lemon: #ffd60a; --ink: #111; --paper: #f3efe6; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 56px 40px 90px; }
+
+  .brand { text-align: center; margin: 18px 0 40px; }
+  .logo { position: relative; display: inline-block; }
+  .logo .word { font-size: 64px; font-weight: 700; letter-spacing: -2px; position: relative; z-index: 2; }
+  .logo .lemon {
+    position: absolute; right: -34px; top: 50%; width: 78px; height: 58px;
+    transform: translateY(-52%) rotate(-12deg);
+    background: var(--lemon); border-radius: 60% 55% 58% 62%/68% 62% 60% 56%;
+    z-index: 1;
+  }
+  .logo .lemon::after {
+    content: ""; position: absolute; right: -8px; top: 42%; width: 16px; height: 6px;
+    background: var(--lemon); border-radius: 50%; transform: rotate(18deg);
+  }
+
+  nav { text-align: center; margin-bottom: 30px; font-size: 19px; }
+  nav a { color: var(--ink); text-decoration: none; margin: 0 14px; position: relative; font-weight: 400; }
+  nav a.active { font-weight: 700; }
+  nav a.active::after {
+    content: ""; position: absolute; left: -3px; right: -3px; bottom: 1px; height: 10px;
+    background: var(--lemon); z-index: -1;
+  }
+
+  .meta {
+    text-align: center; letter-spacing: 3px; font-size: 14px; font-weight: 700;
+    padding-bottom: 22px; border-bottom: 2px solid var(--ink);
+  }
+  .meta .dim { color: #9a948a; font-weight: 700; }
+  .meta .sep { margin: 0 14px; color: #c9c2b5; }
+
+  .entry { padding-top: 40px; }
+  .entry .code { text-align: center; font-size: 14px; font-weight: 700; letter-spacing: 1px; margin-bottom: 14px; }
+  .shot {
+    background: #0d0d0d; color: #fff; aspect-ratio: 16/8; width: 100%;
+    padding: 16px 18px; font-size: 13px; letter-spacing: 2px; font-weight: 700;
+    display: block; position: relative; overflow: hidden;
+  }
+  .shot.has-img { padding: 0; }
+  .shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .shot .tag { position: absolute; top: 16px; left: 18px; }
+  .entry .body { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 40px; padding: 16px 2px 0; }
+  .entry .title { font-size: 22px; font-weight: 700; }
+  .entry .summary { font-size: 15px; color: #555; }
+  .entry .desc { grid-column: 1 / -1; font-size: 15px; line-height: 1.5; max-width: 60ch; }
+  .entry .tags { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .entry .tags span { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; border: 1px solid var(--ink); padding: 3px 9px; }
+  .entry .more { grid-column: 1 / -1; font-size: 13px; text-decoration: underline; }
+
+  /* rich text block */
+  .rich { max-width: 64ch; margin: 0 auto; }
+  .rich h2 { font-size: 30px; letter-spacing: -0.5px; }
+  .rich p { font-size: 17px; line-height: 1.6; color: #2a2a2a; }
+
+  /* shop */
+  .shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; padding-top: 26px; }
+  .shop-item .ph { background: #0d0d0d; aspect-ratio: 1/1; }
+  .shop-item h3 { font-size: 17px; margin: 12px 0 2px; }
+  .shop-item .price { font-weight: 700; }
+  .shop-item .price .sold { color: #b00; text-decoration: line-through; margin-right: 8px; }
+
+  .note { color: #6b665c; }
+  .empty { text-align:center; color:#9a948a; padding: 60px 0; font-size: 14px; letter-spacing:1px; }
+</style>
+</head>
+<body>
+  <div class="wrap" id="site"></div>
+<script>
+  // Default sample content (mirrors what the editor seeds).
+  let SITE = null;
+
+  function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  function nl2p(s){ return esc(s).split(/\n{2,}/).map(p => '<p>'+p.replace(/\n/g,'<br>')+'</p>').join(''); }
+
+  function renderBlock(b){
+    if (b.type === 'richtext'){
+      return '<section class="rich">'
+        + (b.heading ? '<h2>'+esc(b.heading)+'</h2>' : '')
+        + nl2p(b.body||'') + '</section>';
+    }
+    if (b.type === 'projectgrid'){
+      const items = (b.projects||[]);
+      if (!items.length) return '<div class="empty">NO WORKS YET</div>';
+      return items.map((p, i) => {
+        const code = 'JM-' + String(i+1).padStart(3,'0');
+        const tag = (p.tags && p.tags[0]) ? p.tags[0] : 'WORK';
+        const img = (p.images && p.images[0]) ? p.images[0] : '';
+        const shot = img
+          ? '<div class="shot has-img"><img src="'+esc(img)+'" alt=""><span class="tag" style="position:absolute;color:#fff;mix-blend-mode:difference">'+esc(tag).toUpperCase()+'</span></div>'
+          : '<div class="shot"><span class="tag">'+esc(tag).toUpperCase()+'</span></div>';
+        return '<article class="entry">'
+          + '<div class="code">'+code+'</div>'
+          + shot
+          + '<div class="body">'
+            + '<div class="title">'+esc(p.title||'Untitled')+'</div>'
+            + '<div class="summary">'+esc(p.summary||'')+'</div>'
+            + (p.body ? '<div class="desc">'+esc(p.body)+'</div>' : '')
+            + ((p.tags&&p.tags.length) ? '<div class="tags">'+p.tags.map(t=>'<span>'+esc(t)+'</span>').join('')+'</div>' : '')
+            + (p.link ? '<a class="more" href="'+esc(p.link)+'">view project →</a>' : '')
+          + '</div>'
+        + '</article>';
+      }).join('');
+    }
+    if (b.type === 'shop'){
+      const items = (b.items||[]);
+      return '<section class="shop-grid">' + items.map(it =>
+        '<div class="shop-item"><div class="ph"></div><h3>'+esc(it.name||'Item')+'</h3>'
+        + '<div class="price">'+(it.sold?'<span class="sold">'+esc(it.price)+'</span>SOLD':esc(it.price||''))+'</div></div>'
+      ).join('') + '</section>';
+    }
+    if (b.type === 'shopnotes'){
+      return '<section class="rich"><p class="note">'+nl2p(b.body||'')+'</p></section>';
+    }
+    if (b.type === 'entrylist'){
+      const rows = (b.entries||[]);
+      return '<section class="rich">'+ rows.map(r =>
+        '<p><strong>'+esc(r.year||'')+'</strong> &nbsp; '+esc(r.label||'')+'</p>'
+      ).join('') + '</section>';
+    }
+    if (b.type === 'notecards'){
+      const cards = (b.cards||[]);
+      return '<section class="rich">'+ cards.map(c =>
+        '<p><strong>'+esc(c.title||'')+'</strong><br>'+esc(c.text||'')+'</p>'
+      ).join('') + '</section>';
+    }
+    return '';
+  }
+
+  function render(){
+    if (!SITE) return;
+    const page = SITE.pages.find(p => p.id === SITE.activePageId) || SITE.pages[0];
+    const root = document.getElementById('site');
+    const nav = SITE.pages.map(p =>
+      '<a class="'+(p.id===page.id?'active':'')+'" href="#">'+esc(p.navLabel||p.title)+'</a>'
+    ).join('');
+    const head =
+      '<div class="brand"><span class="logo"><span class="word">jmdm</span><span class="lemon"></span></span></div>'
+      + '<nav>'+nav+'</nav>'
+      + '<div class="meta">'+esc(page.title).toUpperCase()
+        + '<span class="sep">·</span>2019 — 2024'
+        + '<span class="sep">·</span><span class="dim">'+ (page.works||'14 works').toUpperCase() +'</span></div>';
+    root.innerHTML = head + (page.blocks||[]).map(renderBlock).join('');
+  }
+
+  window.addEventListener('message', (e) => {
+    const d = e.data;
+    if (d && d.type === 'knit:render'){ SITE = d.site; render(); }
+  });
+  // Announce readiness so the editor can push initial state.
+  parent.postMessage({ type: 'knit:preview-ready' }, '*');
+</script>
+</body>
+</html>

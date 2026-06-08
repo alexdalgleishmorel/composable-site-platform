@@ -19,8 +19,8 @@ describe('admin app', () => {
     render(<App />);
     await signIn('alex.dalgleishmorel@gmail.com');
     expect(await screen.findByText('Demo Site')).toBeTruthy();
-    // The Home page's seeded projectGrid block renders from the registry.
-    expect(screen.getByText('Project grid')).toBeTruthy();
+    // The Home page's seeded projectGrid block renders from the registry (scope past the add chip).
+    expect(screen.getByText('Project grid', { selector: '.blockcard__type' })).toBeTruthy();
   });
 
   it('adds a block from the registry and saves successfully', async () => {
@@ -28,13 +28,14 @@ describe('admin app', () => {
     await signIn('alex.dalgleishmorel@gmail.com');
     await screen.findByText('Demo Site');
 
-    // No Shop block yet (the "+ Shop" add button text isn't an exact "Shop" match).
-    expect(screen.queryByText('Shop')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: '+ Shop' }));
-    expect(screen.getByText('Shop')).toBeTruthy(); // block card header label
+    // No Shop block card yet (the "Shop" add chip is always present, so scope to card headers).
+    const shopCards = () => screen.queryAllByText('Shop', { selector: '.blockcard__type' });
+    expect(shopCards()).toHaveLength(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Add Shop block' }));
+    expect(shopCards()).toHaveLength(1); // block card header label
 
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(screen.getByText('Saved.')).toBeTruthy());
+    fireEvent.click(screen.getByRole('button', { name: /save & publish/i }));
+    await waitFor(() => expect(screen.getByText('Changes published')).toBeTruthy());
   });
 
   it('switches pages via the page tabs', async () => {
@@ -43,6 +44,7 @@ describe('admin app', () => {
     await screen.findByText('Demo Site');
 
     fireEvent.click(screen.getByRole('button', { name: /About \/about/i }));
-    expect(screen.getByText('Rich text')).toBeTruthy(); // About page's richText block
+    // About page's richText block card (scope past the add chip of the same name).
+    expect(screen.getByText('Rich text', { selector: '.blockcard__type' })).toBeTruthy();
   });
 });
