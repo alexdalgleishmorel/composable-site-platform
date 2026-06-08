@@ -2,7 +2,7 @@
 
 **Start here.** This is the living snapshot of what's deployed, what's left, and how to operate the
 platform. [`ARCHITECTURE.md`](ARCHITECTURE.md) is the design source of truth (what the system *is*);
-this doc is the operational state (where it *is*). Last updated **2026-06-07**.
+this doc is the operational state (where it *is*). Last updated **2026-06-08**.
 
 ## TL;DR
 
@@ -94,15 +94,21 @@ it generic; don't commit client-specific demo content there.
 | **#23 / #15** | Image migration | Jack uploads his real photos via the admin (presign endpoint exercises here); placeholders until then |
 | **#16** | Stripe checkout (`POST /checkout` + webhook) | Deferred by decision ([ADR 0001](adr/)); for when the shop goes live |
 
-## Active thread (not yet in the repo)
+## Editor redesign — shipped (2026-06-08)
 
-The **editor (admin app) is being visually redesigned** — modern "liquid glass" / glassmorphism look
-with flash/toast feedback on save success/failure. The design is being produced in a separate Claude
-Design project from a text brief (the editor is a **platform-level shared tool with its own identity**
-— deliberately independent of any client's branding, e.g. jmdm's lemon/Arial look that shows only
-inside the preview pane). When the design lands, port it into `packages/admin/src/*` (the structure —
-top bar, page tabs, block cards, field primitives in `@csp/blocks` `ui/fields.tsx`, toasts — is
-already modular for a clean re-port). Until then `packages/admin` keeps its current plain styling.
+The shared editor (admin app) has been **rebuilt with the "liquid glass" / glassmorphism look** from
+the design handoff (`design_handoff_knit_editor/`, kept as reference) and is **live in production**
+(deployed via `deploy-shared`, PR #81). It's a platform-level tool with its own identity ("Knit") —
+deliberately independent of any client's branding (e.g. jmdm's lemon/Arial look, which shows only
+inside the preview iframe).
+
+Scope was look-and-feel + editing interactions, **not** the data model — the content contract, API,
+and validation are unchanged. Notable behaviour: drag-to-reorder replaces up/down arrows (shared in
+`@csp/blocks` `ui/fields.tsx` / `ui/upload.tsx`, with ↑/↓ keyboard fallback), delete goes through a
+confirm modal, add-page, success/error toasts on save, Light/Dark + density persisted to
+`localStorage`, and a **live** (not publish-gated) WYSIWYG preview. The shell lives in
+`packages/admin/src/*` — `tokens.css` + `admin.css`, `shell/*`, and the `toasts.tsx` / `confirm.tsx` /
+`theme.tsx` providers.
 
 ## Conventions / guardrails for the next session
 
