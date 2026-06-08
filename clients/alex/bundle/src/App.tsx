@@ -50,6 +50,12 @@ function Stage({ previewing }: { previewing?: boolean }) {
     if (i >= 0) setSelected(i);
   }, [detailId, projects]);
 
+  // Clamp the selection if the project list shrinks under it (e.g. a project removed in live preview),
+  // so the screen never goes blank with a stale out-of-range index.
+  useEffect(() => {
+    if (selected > projects.length - 1) setSelected(Math.max(0, projects.length - 1));
+  }, [projects.length, selected]);
+
   useEffect(() => {
     const onResize = () => setVp({ w: window.innerWidth, h: window.innerHeight });
     window.addEventListener('resize', onResize);

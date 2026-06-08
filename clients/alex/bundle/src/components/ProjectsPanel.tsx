@@ -169,7 +169,9 @@ export const ProjectsPanel = ({
       settleTimer = window.setTimeout(() => {
         const w = sc.clientWidth;
         if (!w) return;
-        const total = itemsRef.current.length;
+        // Derive the count from the current items, not itemsRef — the ref array keeps a stale (sparse)
+        // length when the project list shrinks, which would mis-detect the clone wrap boundary.
+        const total = hasClones ? projects.length + 2 : projects.length;
         const scrollerIdx = Math.max(0, Math.min(total - 1, Math.round(sc.scrollLeft / w)));
 
         // Wrap detection: if we landed on a clone, jump scroll to the
