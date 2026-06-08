@@ -7,6 +7,7 @@
  */
 import { entryListSchema } from './blocks/entryList/schema';
 import { noteCardsSchema } from './blocks/noteCards/schema';
+import { portfolioProjectsSchema } from './blocks/portfolioProject/schema';
 import { projectGridSchema } from './blocks/projectGrid/schema';
 import { richTextSchema } from './blocks/richText/schema';
 import { shopSchema, validateShop, type ShopData } from './blocks/shop/schema';
@@ -25,6 +26,7 @@ export const contentValidators: ContentValidators = {
     entryList: entryListSchema,
     noteCards: noteCardsSchema,
     shopNotes: shopNotesSchema,
+    portfolioProject: portfolioProjectsSchema,
   },
   validators: {
     // Stricter money validation runs after the schema parse (real money — §5).

@@ -9,10 +9,11 @@ const MVP_BLOCK_TYPES = [
   'entryList',
   'noteCards',
   'shopNotes',
+  'portfolioProject',
 ].sort();
 
 describe('MVP block library', () => {
-  it('registers all six MVP block types', () => {
+  it('registers all the block types', () => {
     expect(registry.types().sort()).toEqual(MVP_BLOCK_TYPES);
   });
 
