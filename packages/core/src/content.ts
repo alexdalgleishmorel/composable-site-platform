@@ -60,3 +60,23 @@ export const tenantContentSchema = z.object({
   updatedAt: z.string().datetime(), // ISO timestamp
 });
 export type TenantContent = z.infer<typeof tenantContentSchema>;
+
+/**
+ * The platform-owner's registry of clients: one DynamoDB item per tenant in `csp-tenants`. This is
+ * owner-controlled and deliberately separate from the client-controlled content document so a
+ * client's `PUT /content` can never touch its own provisioning.
+ *
+ * `blocks` is the per-tenant block allow-list. **Absent ⇒ every registered block type is allowed**
+ * (the default); an explicit array restricts the editor's "Add a block" menu and is enforced on
+ * `PUT /content`. Provisioning therefore only ever *restricts* — existing tenants with no row keep
+ * working untouched.
+ */
+export const tenantRecordSchema = z.object({
+  tenantId: z.string().min(1), // partition key — the tenant's domain, e.g. "jmdm.studio"
+  displayName: z.string().min(1),
+  status: z.enum(['active', 'suspended']),
+  blocks: z.array(z.string().min(1)).optional(), // absent => all block types allowed
+  createdAt: z.string().datetime().optional(),
+  updatedAt: z.string().datetime().optional(),
+});
+export type TenantRecord = z.infer<typeof tenantRecordSchema>;

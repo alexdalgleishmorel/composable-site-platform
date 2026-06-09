@@ -12,6 +12,19 @@ resource "aws_dynamodb_table" "content" {
   }
 }
 
+# --- Tenant registry (owner console): the client list + per-tenant block allow-list. Owner-controlled
+# and separate from csp-content so a client's PUT /content can never touch its own provisioning.
+resource "aws_dynamodb_table" "tenants" {
+  name         = "csp-tenants"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "tenantId"
+
+  attribute {
+    name = "tenantId"
+    type = "S"
+  }
+}
+
 # --- Image store (#15): private bucket, browser PUTs via presign, served through CloudFront --------
 resource "aws_s3_bucket" "uploads" {
   bucket_prefix = "csp-uploads-"
@@ -207,9 +220,16 @@ resource "aws_iam_role_policy" "lambda_access" {
         Resource = "${aws_s3_bucket.uploads.arn}/*"
       },
       {
-        Effect   = "Allow"
-        Action   = ["dynamodb:GetItem"]
+        Effect = "Allow"
+        # GetItem for the pre-token lookup; Scan for the owner console's client list.
+        Action   = ["dynamodb:GetItem", "dynamodb:Scan"]
         Resource = aws_dynamodb_table.tenant_map.arn
+      },
+      {
+        Effect = "Allow"
+        # Tenant registry: read (PUT /content enforcement + whoami), Scan (client list), upsert (provision).
+        Action   = ["dynamodb:GetItem", "dynamodb:Scan", "dynamodb:PutItem", "dynamodb:UpdateItem"]
+        Resource = aws_dynamodb_table.tenants.arn
       },
     ]
   })
@@ -217,14 +237,20 @@ resource "aws_iam_role_policy" "lambda_access" {
 
 locals {
   lambda_env = {
-    CONTENT_TABLE = aws_dynamodb_table.content.name
-    UPLOAD_BUCKET = aws_s3_bucket.uploads.bucket
-    CDN_BASE_URL  = "https://${aws_cloudfront_distribution.uploads.domain_name}"
+    CONTENT_TABLE    = aws_dynamodb_table.content.name
+    UPLOAD_BUCKET    = aws_s3_bucket.uploads.bucket
+    CDN_BASE_URL     = "https://${aws_cloudfront_distribution.uploads.domain_name}"
+    TENANTS_TABLE    = aws_dynamodb_table.tenants.name
+    TENANT_MAP_TABLE = aws_dynamodb_table.tenant_map.name
+    OWNER_EMAILS     = join(",", var.owner_emails)
   }
   handlers = {
-    get_content     = "index.getContent"
-    put_content     = "index.putContent"
-    uploads_presign = "index.uploadsPresign"
+    get_content       = "index.getContent"
+    put_content       = "index.putContent"
+    uploads_presign   = "index.uploadsPresign"
+    whoami            = "index.whoami"
+    list_tenants      = "index.listTenants"
+    put_tenant_blocks = "index.setTenantBlocks"
   }
 }
 
@@ -276,9 +302,12 @@ resource "aws_apigatewayv2_integration" "api" {
 
 locals {
   routes = {
-    get_content     = { key = "GET /content", auth = false }
-    put_content     = { key = "PUT /content", auth = true }
-    uploads_presign = { key = "POST /uploads/presign", auth = true }
+    get_content       = { key = "GET /content", auth = false }
+    put_content       = { key = "PUT /content", auth = true }
+    uploads_presign   = { key = "POST /uploads/presign", auth = true }
+    whoami            = { key = "GET /admin/whoami", auth = true }
+    list_tenants      = { key = "GET /admin/tenants", auth = true }
+    put_tenant_blocks = { key = "PUT /admin/tenants/{tenantId}/blocks", auth = true }
   }
 }
 

@@ -28,10 +28,16 @@ export function AdminWorkspace({
   api,
   uploader,
   previewUrl,
+  allowedTypes = null,
+  onBack,
 }: {
   api: ContentApi;
   uploader: Uploader | null;
   previewUrl: string;
+  /** The tenant's provisioned block types; `null` ⇒ all types. Filters the "Add a block" menu. */
+  allowedTypes?: string[] | null;
+  /** When set, the top bar shows a "Clients" back link (used when the owner edits their own site). */
+  onBack?: () => void;
 }) {
   const session = useSession();
   const toast = useToast();
@@ -143,6 +149,7 @@ export function AdminWorkspace({
           onSave={() => void save()}
           onSetTheme={setTheme}
           onSignOut={session.signOut}
+          onBack={onBack}
         />
         <PageTabs
           pages={content.pages}
@@ -156,6 +163,7 @@ export function AdminWorkspace({
               pageTitle={activePage.title}
               blocks={activePage.blocks}
               registry={registry}
+              allowedTypes={allowedTypes}
               justAddedId={justAdded}
               onPatchBlock={patchBlock}
               onRemoveBlock={removeBlock}

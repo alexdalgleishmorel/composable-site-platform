@@ -8,6 +8,7 @@ on:
       - 'services/api/**'
       - 'packages/blocks/**'
       - 'packages/core/**'
+      - 'packages/admin/**'
   workflow_dispatch:
 
 permissions:
@@ -47,6 +48,9 @@ jobs:
           # Cognito hosted-domain prefix is globally unique; set COGNITO_DOMAIN_PREFIX to an
           # account-unique value so the Google redirect URI is deterministic. Falls back to csp-auth.
           TF_VAR_cognito_domain_prefix: ${{ vars.COGNITO_DOMAIN_PREFIX || 'csp-auth' }}
+          # Platform-owner allowlist for the owner console (/admin/*). Set the repo variable
+          # OWNER_EMAILS to a JSON array, e.g. ["alex.dalgleishmorel@gmail.com"]. Defaults to none.
+          TF_VAR_owner_emails: ${{ vars.OWNER_EMAILS || '[]' }}
         run: |
           terraform init \
             -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \

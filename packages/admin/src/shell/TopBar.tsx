@@ -16,6 +16,7 @@ export function TopBar({
   onSave,
   onSetTheme,
   onSignOut,
+  onBack,
 }: {
   siteName: string;
   domain: string;
@@ -26,10 +27,17 @@ export function TopBar({
   onSave: () => void;
   onSetTheme: (theme: Theme) => void;
   onSignOut: () => void;
+  /** When set (owner editing their own site), shows a "Clients" back link to the owner console. */
+  onBack?: () => void;
 }) {
   return (
     <header className="topbar glass">
       <div className="topbar__left">
+        {onBack && (
+          <button className="topbar__back focusable" onClick={onBack} aria-label="Back to clients">
+            ‹ Clients
+          </button>
+        )}
         <div className="brandmark" title="Knit">
           <span className="brandmark__logo" aria-hidden="true">
             <KnitLogo size={22} />

@@ -14,6 +14,7 @@ export function BlockEditor({
   pageTitle,
   blocks,
   registry,
+  allowedTypes,
   justAddedId,
   onPatchBlock,
   onRemoveBlock,
@@ -23,6 +24,9 @@ export function BlockEditor({
   pageTitle: string;
   blocks: Block[];
   registry: BlockRegistry;
+  /** The tenant's provisioned block types; `null` ⇒ every registered type may be added. Only the
+   * "Add a block" menu is filtered — already-placed blocks of any type stay editable/removable. */
+  allowedTypes: string[] | null;
   justAddedId: string | null;
   onPatchBlock: (id: string, data: unknown) => void;
   onRemoveBlock: (id: string) => void;
@@ -101,23 +105,26 @@ export function BlockEditor({
         <div className="addblock">
           <span className="addblock__label">Add a block</span>
           <div className="addblock__chips">
-            {registry.list().map((def) => {
-              const meta = blockMeta(def.type, def.label);
-              return (
-                <button
-                  key={def.type}
-                  className="chip focusable"
-                  aria-label={`Add ${meta.name} block`}
-                  onClick={() => onAddBlock(def.type)}
-                >
-                  <span className="chip__glyph">{meta.glyph}</span>
-                  <span className="chip__text">
-                    <span className="chip__name">{meta.name}</span>
-                    <span className="chip__blurb">{meta.blurb}</span>
-                  </span>
-                </button>
-              );
-            })}
+            {registry
+              .list()
+              .filter((def) => !allowedTypes || allowedTypes.includes(def.type))
+              .map((def) => {
+                const meta = blockMeta(def.type, def.label);
+                return (
+                  <button
+                    key={def.type}
+                    className="chip focusable"
+                    aria-label={`Add ${meta.name} block`}
+                    onClick={() => onAddBlock(def.type)}
+                  >
+                    <span className="chip__glyph">{meta.glyph}</span>
+                    <span className="chip__text">
+                      <span className="chip__name">{meta.name}</span>
+                      <span className="chip__blurb">{meta.blurb}</span>
+                    </span>
+                  </button>
+                );
+              })}
           </div>
         </div>
       </div>
