@@ -14,6 +14,24 @@ import type { TenantContent } from '@csp/core';
  */
 const projects: PortfolioProject[] = [
   {
+    id: 'recipes',
+    name: 'Recipes',
+    headline: 'What should I cook this week? What do I actually need to buy?',
+    description:
+      'A recipe library, meal planner, and grocery-list app. Browse a cookbook with a Datadog-style query language, sketch a week of meals on a calendar, and get an automatically aggregated grocery list from whichever meals you pick.',
+    links: {
+      github: 'https://github.com/alexdalgleishmorel/recipes',
+      try: 'https://alexdalgleishmorel.github.io/recipes/',
+    },
+    accent: '#FB923C',
+    accent2: '#34D399',
+    animation: {
+      kind: 'lottie',
+      url: 'https://d2upo1phpjtftl.cloudfront.net/alexdalgleishmorel.com/c6b671cb-06d6-4f53-ac25-1474bb47568c.json',
+    },
+    order: 0,
+  },
+  {
     id: 'expense-visualizer',
     name: 'Expense Visualizer',
     headline: 'Where is my money actually going? What will I spend next month?',
@@ -27,7 +45,7 @@ const projects: PortfolioProject[] = [
     accent: '#38BDF8',
     accent2: '#2DD4BF',
     animation: { kind: 'builtin', key: 'expense-visualizer' },
-    order: 0,
+    order: 1,
   },
   {
     id: 'mortgage',
@@ -41,7 +59,7 @@ const projects: PortfolioProject[] = [
     accent: '#F0A36B',
     accent2: '#7A4FE0',
     animation: { kind: 'builtin', key: 'mortgage' },
-    order: 1,
+    order: 2,
   },
   {
     id: 'flow-report',
@@ -57,7 +75,7 @@ const projects: PortfolioProject[] = [
     accent: '#5FD0C8',
     accent2: '#3A6BFF',
     animation: { kind: 'builtin', key: 'flow-report' },
-    order: 2,
+    order: 3,
   },
   {
     id: 'average-cost',
@@ -72,7 +90,7 @@ const projects: PortfolioProject[] = [
     accent: '#FFB070',
     accent2: '#E04F8E',
     animation: { kind: 'builtin', key: 'average-cost' },
-    order: 3,
+    order: 4,
   },
   {
     id: 'poker-flow',
@@ -87,24 +105,6 @@ const projects: PortfolioProject[] = [
     accent: '#C8A2FF',
     accent2: '#5462E8',
     animation: { kind: 'builtin', key: 'poker-flow' },
-    order: 4,
-  },
-  {
-    id: 'recipes',
-    name: 'Recipes',
-    headline: 'What should I cook this week? What do I actually need to buy?',
-    description:
-      'A recipe library, meal planner, and grocery-list app. Browse a cookbook with a Datadog-style query language, sketch a week of meals on a calendar, and get an automatically aggregated grocery list from whichever meals you pick.',
-    links: {
-      github: 'https://github.com/alexdalgleishmorel/recipes',
-      try: 'https://alexdalgleishmorel.github.io/recipes/',
-    },
-    accent: '#FB923C',
-    accent2: '#34D399',
-    animation: {
-      kind: 'lottie',
-      url: 'https://d2upo1phpjtftl.cloudfront.net/alexdalgleishmorel.com/264b624b-f761-42b6-be7d-1a749727f784.json',
-    },
     order: 5,
   },
 ];
