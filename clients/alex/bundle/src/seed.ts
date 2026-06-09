@@ -5,13 +5,32 @@ import type { TenantContent } from '@csp/core';
  * The alexdalgleishmorel.com content seed — the standalone portfolio's `data/projects.ts` (plus bio
  * and links) reconstructed on the block model.
  *
- * - Home ("/") is a single `portfolioProject` block; each project keeps its built-in CSS motif.
+ * - Home ("/") is a single `portfolioProject` block; the original five keep their built-in CSS motifs,
+ *   while Recipes uses an uploaded Lottie animation (the "content, not code" path — no redeploy).
  * - About ("/about") is a `richText` bio + a `linkList` of external links.
  * - Brand (name / role) lives in `siteMeta` (set here; the admin edits blocks, not siteMeta).
  *
  * This module is the dev/standalone fallback for the bundle AND the document PUT at onboard (U6).
  */
 const projects: PortfolioProject[] = [
+  {
+    id: 'recipes',
+    name: 'Recipes',
+    headline: 'What should I cook this week? What do I actually need to buy?',
+    description:
+      'A recipe library, meal planner, and grocery-list app. Browse a cookbook with a Datadog-style query language, sketch a week of meals on a calendar, and get an automatically aggregated grocery list from whichever meals you pick.',
+    links: {
+      github: 'https://github.com/alexdalgleishmorel/recipes',
+      try: 'https://alexdalgleishmorel.github.io/recipes/',
+    },
+    accent: '#FB923C',
+    accent2: '#34D399',
+    animation: {
+      kind: 'lottie',
+      url: 'https://d2upo1phpjtftl.cloudfront.net/alexdalgleishmorel.com/c6b671cb-06d6-4f53-ac25-1474bb47568c.json',
+    },
+    order: 0,
+  },
   {
     id: 'expense-visualizer',
     name: 'Expense Visualizer',
@@ -26,7 +45,7 @@ const projects: PortfolioProject[] = [
     accent: '#38BDF8',
     accent2: '#2DD4BF',
     animation: { kind: 'builtin', key: 'expense-visualizer' },
-    order: 0,
+    order: 1,
   },
   {
     id: 'mortgage',
@@ -40,7 +59,7 @@ const projects: PortfolioProject[] = [
     accent: '#F0A36B',
     accent2: '#7A4FE0',
     animation: { kind: 'builtin', key: 'mortgage' },
-    order: 1,
+    order: 2,
   },
   {
     id: 'flow-report',
@@ -56,7 +75,7 @@ const projects: PortfolioProject[] = [
     accent: '#5FD0C8',
     accent2: '#3A6BFF',
     animation: { kind: 'builtin', key: 'flow-report' },
-    order: 2,
+    order: 3,
   },
   {
     id: 'average-cost',
@@ -71,7 +90,7 @@ const projects: PortfolioProject[] = [
     accent: '#FFB070',
     accent2: '#E04F8E',
     animation: { kind: 'builtin', key: 'average-cost' },
-    order: 3,
+    order: 4,
   },
   {
     id: 'poker-flow',
@@ -86,7 +105,7 @@ const projects: PortfolioProject[] = [
     accent: '#C8A2FF',
     accent2: '#5462E8',
     animation: { kind: 'builtin', key: 'poker-flow' },
-    order: 4,
+    order: 5,
   },
 ];
 

@@ -13,10 +13,13 @@ describe('alex seed', () => {
     expect(alexSeed.pages.map((p) => p.slug)).toEqual(['/', '/about']);
   });
 
-  it('home lists the five projects, each with a built-in animation', () => {
+  it('home lists the six projects: five built-in motifs plus one uploaded Lottie', () => {
     const data = alexSeed.pages[0]!.blocks[0]!.data as PortfolioProjectsData;
-    expect(data.projects).toHaveLength(5);
-    expect(data.projects.every((p) => p.animation.kind === 'builtin')).toBe(true);
-    expect(data.projects.map((p) => p.order)).toEqual([0, 1, 2, 3, 4]);
+    expect(data.projects).toHaveLength(6);
+    expect(data.projects.filter((p) => p.animation.kind === 'builtin')).toHaveLength(5);
+    const lottie = data.projects.filter((p) => p.animation.kind === 'lottie');
+    expect(lottie).toHaveLength(1);
+    expect(lottie[0]!.id).toBe('recipes');
+    expect(data.projects.map((p) => p.order)).toEqual([0, 1, 2, 3, 4, 5]);
   });
 });
