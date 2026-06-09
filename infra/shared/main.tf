@@ -42,6 +42,28 @@ resource "aws_cloudfront_origin_access_control" "uploads" {
   signing_protocol                  = "sigv4"
 }
 
+# CORS on reads: the public site fetch()es uploaded assets cross-origin (e.g. a project's Lottie JSON
+# in the portfolio bundle). <img> reads aren't CORS-gated, but fetch() is — without these headers the
+# browser blocks the response and the bundle silently falls back. The Managed-CachingOptimized cache
+# policy doesn't forward Origin to S3, so we let CloudFront inject the headers itself rather than rely
+# on S3's CORS (which only covers the presigned PUT). Public assets → allow any origin.
+resource "aws_cloudfront_response_headers_policy" "uploads_cors" {
+  name = "csp-uploads-cors"
+  cors_config {
+    access_control_allow_credentials = false
+    access_control_allow_headers {
+      items = ["*"]
+    }
+    access_control_allow_methods {
+      items = ["GET", "HEAD"]
+    }
+    access_control_allow_origins {
+      items = ["*"]
+    }
+    origin_override = true
+  }
+}
+
 resource "aws_cloudfront_distribution" "uploads" {
   enabled = true
 
@@ -52,11 +74,12 @@ resource "aws_cloudfront_distribution" "uploads" {
   }
 
   default_cache_behavior {
-    target_origin_id       = "uploads"
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
-    cache_policy_id        = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized
+    target_origin_id           = "uploads"
+    viewer_protocol_policy     = "redirect-to-https"
+    allowed_methods            = ["GET", "HEAD"]
+    cached_methods             = ["GET", "HEAD"]
+    cache_policy_id            = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.uploads_cors.id
   }
 
   restrictions {
