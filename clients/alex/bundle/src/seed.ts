@@ -5,7 +5,8 @@ import type { TenantContent } from '@csp/core';
  * The alexdalgleishmorel.com content seed — the standalone portfolio's `data/projects.ts` (plus bio
  * and links) reconstructed on the block model.
  *
- * - Home ("/") is a single `portfolioProject` block; each project keeps its built-in CSS motif.
+ * - Home ("/") is a single `portfolioProject` block; the original five keep their built-in CSS motifs,
+ *   while Recipes uses an uploaded Lottie animation (the "content, not code" path — no redeploy).
  * - About ("/about") is a `richText` bio + a `linkList` of external links.
  * - Brand (name / role) lives in `siteMeta` (set here; the admin edits blocks, not siteMeta).
  *
@@ -87,6 +88,24 @@ const projects: PortfolioProject[] = [
     accent2: '#5462E8',
     animation: { kind: 'builtin', key: 'poker-flow' },
     order: 4,
+  },
+  {
+    id: 'recipes',
+    name: 'Recipes',
+    headline: 'What should I cook this week? What do I actually need to buy?',
+    description:
+      'A recipe library, meal planner, and grocery-list app. Browse a cookbook with a Datadog-style query language, sketch a week of meals on a calendar, and get an automatically aggregated grocery list from whichever meals you pick.',
+    links: {
+      github: 'https://github.com/alexdalgleishmorel/recipes',
+      try: 'https://alexdalgleishmorel.github.io/recipes/',
+    },
+    accent: '#FB923C',
+    accent2: '#34D399',
+    animation: {
+      kind: 'lottie',
+      url: 'https://d2upo1phpjtftl.cloudfront.net/alexdalgleishmorel.com/264b624b-f761-42b6-be7d-1a749727f784.json',
+    },
+    order: 5,
   },
 ];
 
