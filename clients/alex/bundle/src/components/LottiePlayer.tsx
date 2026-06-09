@@ -18,8 +18,10 @@ const LottiePlayer = ({ url }: { url: string }) => {
       .then((json) => {
         if (active) setData(json as object);
       })
-      .catch(() => {
-        /* keep the accent fill on failure */
+      .catch((err) => {
+        // Keep the accent fill on failure, but surface why — a silent catch here made a missing-CORS
+        // fallback hard to diagnose (the fetch is cross-origin to the uploads CDN).
+        console.warn(`LottiePlayer: failed to load animation from ${url}`, err);
       });
     return () => {
       active = false;
