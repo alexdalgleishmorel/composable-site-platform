@@ -7,6 +7,10 @@ output "content_table" {
   value = aws_dynamodb_table.content.name
 }
 
+output "tenants_table" {
+  value = aws_dynamodb_table.tenants.name
+}
+
 output "uploads_bucket" {
   value = aws_s3_bucket.uploads.bucket
 }

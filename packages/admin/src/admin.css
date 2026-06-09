@@ -1910,3 +1910,220 @@
     min-height: 320px;
   }
 }
+
+/* ============================================================
+   Owner console — clients list + per-tenant block provisioning
+   ============================================================ */
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  border-radius: var(--r-pill);
+  padding: 0 16px;
+  height: 40px;
+  cursor: pointer;
+  transition:
+    background 0.16s,
+    border-color 0.16s;
+}
+.ghost:hover {
+  background: var(--field-bg-focus);
+  border-color: var(--accent);
+}
+.ghost:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.topbar__back,
+.owner__back {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  border-radius: var(--r-pill);
+  padding: 6px 12px;
+  cursor: pointer;
+  transition:
+    background 0.16s,
+    border-color 0.16s;
+}
+.topbar__back:hover,
+.owner__back:hover {
+  background: var(--field-bg-focus);
+  border-color: var(--accent);
+}
+.owner__back {
+  align-self: flex-start;
+  margin-bottom: 14px;
+}
+
+.owner {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 24px 16px 64px;
+}
+.owner__inner {
+  max-width: 920px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Clients overview */
+.client-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+.client-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  padding: 16px;
+  border-radius: var(--r-lg);
+  background: var(--panel-2);
+  border: 1px solid var(--field-border);
+  box-shadow: inset 0 1px 0 var(--edge-soft);
+  cursor: pointer;
+  transition:
+    transform 0.14s,
+    border-color 0.16s,
+    box-shadow 0.16s;
+}
+.client-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+.client-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.client-card__name {
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--text);
+}
+.client-card__status {
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.client-card__status--suspended {
+  background: rgba(220, 80, 80, 0.14);
+  color: var(--err);
+}
+.client-card__domain {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.client-card__email {
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+.client-card__blocks {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* Provisioning panel */
+.provision__master {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  margin: 4px 0 16px;
+  border-radius: var(--r-lg);
+  background: var(--panel-2);
+  border: 1px solid var(--field-border);
+  cursor: pointer;
+}
+.provision__master input {
+  margin-top: 2px;
+}
+.provision__master span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.provision__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.provision__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  cursor: pointer;
+  transition:
+    background 0.16s,
+    border-color 0.16s;
+}
+.provision__item:hover {
+  border-color: var(--accent);
+}
+.provision__item--off {
+  opacity: 0.55;
+}
+.provision__glyph {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 14px;
+}
+.provision__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.provision__name {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.provision__blurb {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.provision__warn {
+  margin-top: 10px;
+  color: var(--err);
+}
+.provision__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}

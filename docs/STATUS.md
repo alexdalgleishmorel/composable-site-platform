@@ -110,6 +110,27 @@ confirm modal, add-page, success/error toasts on save, Light/Dark + density pers
 `packages/admin/src/*` — `tokens.css` + `admin.css`, `shell/*`, and the `toasts.tsx` / `confirm.tsx` /
 `theme.tsx` providers.
 
+## Owner console — built (pending deploy)
+
+A platform-**owner** role now sits above the per-tenant editor. After sign-in, `GET /admin/whoami`
+routes platform owners to an **owner console** (list of active clients + per-client block
+provisioning) and everyone else to their tenant editor as before. Provisioning is an **allow-list per
+tenant** stored in a new `csp-tenants` DynamoDB table; **absent ⇒ all blocks allowed** (so the two
+live clients keep working with no backfill). It's enforced server-side on `PUT /content` and mirrored
+in the editor's "Add a block" menu.
+
+- **Owner = email allowlist.** Set the repo **variable `OWNER_EMAILS`** to a JSON array, e.g.
+  `["alex.dalgleishmorel@gmail.com"]`; `deploy-shared` passes it to the Lambda as `OWNER_EMAILS`.
+  Until set, the console is inaccessible (every caller is treated as a client). Local mock owner is in
+  `packages/admin/src/auth.tsx` (`DEFAULT_OWNERS`).
+- **New routes** (Cognito-authed): `GET /admin/whoami`, `GET /admin/tenants` (owner-only),
+  `PUT /admin/tenants/{tenantId}/blocks` (owner-only). Client list is a Scan-merge of `csp-tenants`
+  and `csp-tenant-map`, so live-but-unprovisioned tenants appear without a row.
+- **Touch points:** `services/api/src/{handlers,http,store,index}.ts`, `infra/shared` (table + IAM +
+  env + routes), `infra/tenant` (writes a `csp-tenants` row on onboard), and `packages/admin/src/*`
+  (`OwnerConsole.tsx`, `RoleRouter.tsx`, transports in `api.ts`, Add-menu filter in `BlockEditor.tsx`).
+- `deploy-shared.yml` now also triggers on `packages/admin/**`.
+
 ## Conventions / guardrails for the next session
 
 - **`docs/ARCHITECTURE.md` is the source of truth** and is prettier-ignored — do **not** reformat it.

@@ -33,3 +33,9 @@ variable "lambda_dist_dir" {
   type        = string
   default     = "../../services/api/dist"
 }
+
+variable "owner_emails" {
+  description = "Platform-owner emails allowed into the owner console (/admin/* authz gate). Lower-cased on compare."
+  type        = list(string)
+  default     = []
+}

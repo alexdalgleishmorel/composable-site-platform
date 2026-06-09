@@ -174,3 +174,22 @@ resource "aws_dynamodb_table_item" "tenant_map" {
     tenantId = { S = var.tenant_domain }
   })
 }
+
+# --- Tenant registry row (owner console): registers this client so it appears in the clients list
+# pre-provisioned. No `blocks` attribute is written, so the default — every block type allowed —
+# applies until the owner restricts it from the console. (csp-tenants is created by infra/shared.)
+resource "aws_dynamodb_table_item" "tenant" {
+  table_name = "csp-tenants"
+  hash_key   = "tenantId"
+  item = jsonencode({
+    tenantId    = { S = var.tenant_domain }
+    displayName = { S = var.display_name != "" ? var.display_name : var.tenant_domain }
+    status      = { S = "active" }
+  })
+
+  # The owner console manages `blocks` (and may update displayName/status) at runtime; don't let a
+  # re-apply clobber those owner-set attributes.
+  lifecycle {
+    ignore_changes = [item]
+  }
+}

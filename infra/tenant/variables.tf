@@ -8,6 +8,12 @@ variable "client_google_email" {
   type        = string
 }
 
+variable "display_name" {
+  description = "Friendly client name shown in the owner console. Defaults to the domain."
+  type        = string
+  default     = ""
+}
+
 variable "aws_region" {
   type    = string
   default = "us-east-1"

@@ -1,7 +1,6 @@
 import { AuthProvider, useAuth } from 'react-oidc-context';
-import { AdminWorkspace } from './AdminWorkspace';
-import { createHttpApi } from './api';
-import { SessionContext, type Session } from './session';
+import { createHttpAdminApi, createHttpApi } from './api';
+import { RoleRouter } from './RoleRouter';
 import { SignIn } from './shell/SignIn';
 import { createPresignUploader } from './uploader';
 
@@ -11,8 +10,9 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL as string;
 
 /**
  * Real authentication: Cognito Hosted UI via OIDC Authorization Code + PKCE (public SPA client, no
- * secret). The tenant comes from the token's `custom:tenantId` claim — the isolation boundary (§8) —
- * and the same id token authorizes `PUT /content` and `/uploads/presign`.
+ * secret). After sign-in, `GET /admin/whoami` decides the destination — owner console vs. the
+ * tenant editor — and the same id token authorizes every `/admin/*`, `PUT /content`, and
+ * `/uploads/presign` call. The tenant isolation boundary stays the `custom:tenantId` claim (§8).
  */
 function CognitoGate() {
   const auth = useAuth();
@@ -25,28 +25,18 @@ function CognitoGate() {
     return <SignIn onGoogle={() => void auth.signinRedirect()} />;
   }
 
-  const profile = auth.user?.profile;
-  // The pre-token Lambda adds the claim in both forms (#14); accept either.
-  const tenantId = (profile?.['custom:tenantId'] ?? profile?.['tenantId']) as string | undefined;
-  const email = profile?.email ?? '';
-  if (!tenantId) {
-    return (
-      <div className="admin__error">
-        No tenant is mapped to {email}. Ask the platform owner for access.
-      </div>
-    );
-  }
-
+  const email = auth.user?.profile?.email ?? '';
   const getToken = () => auth.user?.id_token ?? null;
-  const session: Session = { email, tenantId, signOut: () => void auth.removeUser() };
-  const api = createHttpApi(API_BASE, tenantId, getToken);
-  const uploader = createPresignUploader(API_BASE, getToken);
 
   return (
-    <SessionContext.Provider value={session}>
-      {/* The live preview embeds the client's own deployed site (tenantId == domain, §1). */}
-      <AdminWorkspace api={api} uploader={uploader} previewUrl={`https://${tenantId}`} />
-    </SessionContext.Provider>
+    <RoleRouter
+      adminApi={createHttpAdminApi(API_BASE, getToken)}
+      identity={{ email, signOut: () => void auth.removeUser() }}
+      // The preview embeds the tenant's own deployed site (tenantId == domain, §1).
+      makeContentApi={(tenantId) => createHttpApi(API_BASE, tenantId, getToken)}
+      makeUploader={() => createPresignUploader(API_BASE, getToken)}
+      previewUrlFor={(tenantId) => `https://${tenantId}`}
+    />
   );
 }
 
