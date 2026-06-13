@@ -144,7 +144,7 @@ export const alexSeed: TenantContent = {
           data: {
             heading: 'elsewhere',
             links: [
-              // Placeholder until a real résumé is hosted; edit in the admin or re-seed.
+              // Served from the bundle's public/resume.pdf at the site root.
               { label: 'Resume', url: 'https://alexdalgleishmorel.com/resume.pdf' },
               { label: 'GitHub', url: 'https://github.com/alexdalgleishmorel' },
               { label: 'LinkedIn', url: 'https://www.linkedin.com/in/alex-dalgleish-morel/' },
