@@ -60,6 +60,12 @@ resource "aws_cloudfront_origin_access_control" "uploads" {
 # browser blocks the response and the bundle silently falls back. The Managed-CachingOptimized cache
 # policy doesn't forward Origin to S3, so we let CloudFront inject the headers itself rather than rely
 # on S3's CORS (which only covers the presigned PUT). Public assets → allow any origin.
+#
+# Also injects a long-lived, immutable Cache-Control: every upload gets a fresh random-UUID key
+# (services/api/src/presign.ts) and is never overwritten in place — "Replace" in the editor always
+# produces a new URL — so a given URL's bytes never change and can be cached by the browser forever.
+# This is set here (a CDN response header), not on the S3 object at upload time, so it applies
+# retroactively to every image already uploaded, and needs no change to the presign/upload signing.
 resource "aws_cloudfront_response_headers_policy" "uploads_cors" {
   name = "csp-uploads-cors"
   cors_config {
@@ -74,6 +80,13 @@ resource "aws_cloudfront_response_headers_policy" "uploads_cors" {
       items = ["*"]
     }
     origin_override = true
+  }
+  custom_headers_config {
+    items {
+      header   = "Cache-Control"
+      value    = "public, max-age=31536000, immutable"
+      override = true
+    }
   }
 }
 
