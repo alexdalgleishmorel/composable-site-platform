@@ -759,6 +759,35 @@ button {
   background: var(--paper);
   color: var(--ink);
 }
+/* Prev/next: always visible (not hover-revealed) so they work on touch, where Left/Right/Up/Down
+   keys never reach the viewer. 44px is the minimum comfortable touch target. */
+.lightbox__nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  line-height: 1;
+  border: 1px solid var(--paper);
+  color: var(--paper);
+  background: rgba(14, 14, 12, 0.55);
+}
+.lightbox__nav--prev {
+  left: 16px;
+}
+.lightbox__nav--next {
+  right: 16px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .lightbox__nav:hover {
+    background: var(--paper);
+    color: var(--ink);
+  }
+}
 .product__info {
   padding: var(--edge);
   display: flex;

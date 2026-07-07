@@ -173,6 +173,27 @@ describe('project detail — sub-image click swaps the main image', () => {
     const thumbs = document.querySelectorAll('.product__image-thumb');
     expect(thumbs[1]!.className).toContain('product__image-thumb--active');
   });
+
+  it('tappable ‹ / › arrows step to the previous/next image and wrap, without closing', () => {
+    renderAt('/projects/quiet-furniture');
+    fireEvent.click(document.querySelector('.product__image-main')!);
+    expect(lightboxImg()).toBe('https://cdn.example/one.jpg');
+
+    fireEvent.click(screen.getByRole('button', { name: /next image/i }));
+    expect(lightboxImg()).toBe('https://cdn.example/two.jpg');
+    expect(document.querySelector('.lightbox')).toBeTruthy(); // tapping the arrow doesn't close it
+
+    fireEvent.click(screen.getByRole('button', { name: /previous image/i }));
+    fireEvent.click(screen.getByRole('button', { name: /previous image/i })); // wraps before the first
+    expect(lightboxImg()).toBe('https://cdn.example/three.jpg');
+  });
+
+  it('hides the prev/next arrows for a single-image gallery', () => {
+    renderAt('/shop/lemon-bowl');
+    fireEvent.click(document.querySelector('.product__image-main')!);
+    expect(screen.queryByRole('button', { name: /previous image/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /next image/i })).toBeNull();
+  });
 });
 
 describe('project detail — the thumbnail gallery is not capped at 4', () => {

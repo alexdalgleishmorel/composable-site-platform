@@ -18,9 +18,11 @@ import { CurrentlyCards, CvRows, FramedImg, frameStyle, renderMap } from './rend
 
 /**
  * A fullscreen, uncropped view of one image from a gallery — closes on backdrop click, the close
- * button, or Escape; Left/Up and Right/Down step to the previous/next image, wrapping at the ends.
- * Portalled to `document.body` so it always covers the viewport regardless of any ancestor's
- * `page-enter` animation (a non-`none` `transform`, even at rest, would otherwise contain it).
+ * button, or Escape. With more than one image: Left/Up and Right/Down step to the previous/next
+ * image (wrapping at the ends), and the same step is available as tappable ‹ / › arrow buttons — the
+ * keyboard shortcuts alone don't reach touch/mobile viewers. Portalled to `document.body` so it always
+ * covers the viewport regardless of any ancestor's `page-enter` animation (a non-`none` `transform`,
+ * even at rest, would otherwise contain it).
  */
 function Lightbox({
   images,
@@ -35,34 +37,61 @@ function Lightbox({
   onNavigate: (index: number) => void;
   onClose: () => void;
 }) {
+  const canNavigate = images.length > 1;
+  const goPrev = () => onNavigate((index - 1 + images.length) % images.length);
+  const goNext = () => onNavigate((index + 1) % images.length);
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
         return;
       }
-      if (images.length <= 1) return;
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        onNavigate((index - 1 + images.length) % images.length);
-      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        onNavigate((index + 1) % images.length);
-      }
+      if (!canNavigate) return;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goPrev();
+      else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goNext();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [images.length, index, onNavigate, onClose]);
+  }, [canNavigate, images.length, index, onNavigate, onClose]);
 
   return createPortal(
     <div className="lightbox" role="dialog" aria-modal="true" aria-label={alt} onClick={onClose}>
       <button type="button" className="lightbox__close" onClick={onClose}>
         × close
       </button>
+      {canNavigate && (
+        <button
+          type="button"
+          className="lightbox__nav lightbox__nav--prev"
+          aria-label="Previous image"
+          onClick={(e) => {
+            e.stopPropagation();
+            goPrev();
+          }}
+        >
+          ‹
+        </button>
+      )}
       <img
         className="lightbox__img"
         src={imageUrl(images[index]!)}
         alt={alt}
         onClick={(e) => e.stopPropagation()}
       />
+      {canNavigate && (
+        <button
+          type="button"
+          className="lightbox__nav lightbox__nav--next"
+          aria-label="Next image"
+          onClick={(e) => {
+            e.stopPropagation();
+            goNext();
+          }}
+        >
+          ›
+        </button>
+      )}
     </div>,
     document.body,
   );
