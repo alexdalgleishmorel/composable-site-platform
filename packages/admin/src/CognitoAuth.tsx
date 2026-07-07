@@ -1,3 +1,4 @@
+import { useCallback, useMemo, useRef } from 'react';
 import { AuthProvider, useAuth } from 'react-oidc-context';
 import { createHttpAdminApi, createHttpApi } from './api';
 import { RoleRouter } from './RoleRouter';
@@ -17,6 +18,23 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL as string;
 function CognitoGate() {
   const auth = useAuth();
 
+  // Keep the freshest id token in a ref so the transports below can be memoised (stable identity
+  // across OIDC silent token renewals) while every request still carries an up-to-date token. Before
+  // this, each renewal produced a new `getToken` closure — and therefore a new `api` object — which
+  // re-triggered AdminWorkspace's content load and wiped the not-yet-published document. Hooks run
+  // before the early returns to keep their order stable.
+  const tokenRef = useRef<string | null>(null);
+  tokenRef.current = auth.user?.id_token ?? null;
+  const getToken = useCallback(() => tokenRef.current, []);
+
+  const adminApi = useMemo(() => createHttpAdminApi(API_BASE, getToken), [getToken]);
+  const makeContentApi = useCallback(
+    // The preview embeds the tenant's own deployed site (tenantId == domain, §1).
+    (tenantId: string) => createHttpApi(API_BASE, tenantId, getToken),
+    [getToken],
+  );
+  const makeUploader = useCallback(() => createPresignUploader(API_BASE, getToken), [getToken]);
+
   if (auth.isLoading) return <div className="admin__loading">Signing in…</div>;
   if (auth.error) {
     return <div className="admin__error">Auth error: {auth.error.message}</div>;
@@ -26,15 +44,13 @@ function CognitoGate() {
   }
 
   const email = auth.user?.profile?.email ?? '';
-  const getToken = () => auth.user?.id_token ?? null;
 
   return (
     <RoleRouter
-      adminApi={createHttpAdminApi(API_BASE, getToken)}
+      adminApi={adminApi}
       identity={{ email, signOut: () => void auth.removeUser() }}
-      // The preview embeds the tenant's own deployed site (tenantId == domain, §1).
-      makeContentApi={(tenantId) => createHttpApi(API_BASE, tenantId, getToken)}
-      makeUploader={() => createPresignUploader(API_BASE, getToken)}
+      makeContentApi={makeContentApi}
+      makeUploader={makeUploader}
       previewUrlFor={(tenantId) => `https://${tenantId}`}
     />
   );

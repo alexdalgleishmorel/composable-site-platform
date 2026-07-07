@@ -1,5 +1,5 @@
 import type { Uploader } from '@csp/blocks';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { AdminApi, ContentApi, WhoAmI } from './api';
 import { OwnerConsole } from './OwnerConsole';
 import { AdminWorkspace } from './AdminWorkspace';
@@ -46,15 +46,29 @@ export function RoleRouter({
     };
   }, [adminApi]);
 
+  // Build the tenant-scoped transports once per tenant so a re-render (e.g. an auth token renewal)
+  // hands AdminWorkspace a *stable* `api`, not a fresh one that would re-trigger its content load.
+  const tenantId = who?.tenantId ?? null;
+  const contentApi = useMemo(
+    () => (tenantId ? makeContentApi(tenantId) : null),
+    [makeContentApi, tenantId],
+  );
+  const uploader = useMemo(
+    () => (tenantId ? makeUploader(tenantId) : null),
+    [makeUploader, tenantId],
+  );
+
   if (error) return <div className="admin__error">{error}</div>;
   if (!who) return <div className="admin__loading">Signing in…</div>;
 
-  const editor = (tenantId: string, allowedTypes: string[] | null, onBack?: () => void) => (
-    <SessionContext.Provider value={{ email: identity.email, tenantId, signOut: identity.signOut }}>
+  const editor = (id: string, allowedTypes: string[] | null, onBack?: () => void) => (
+    <SessionContext.Provider
+      value={{ email: identity.email, tenantId: id, signOut: identity.signOut }}
+    >
       <AdminWorkspace
-        api={makeContentApi(tenantId)}
-        uploader={makeUploader(tenantId)}
-        previewUrl={previewUrlFor(tenantId)}
+        api={contentApi ?? makeContentApi(id)}
+        uploader={uploader ?? makeUploader(id)}
+        previewUrl={previewUrlFor(id)}
         allowedTypes={allowedTypes}
         onBack={onBack}
       />
