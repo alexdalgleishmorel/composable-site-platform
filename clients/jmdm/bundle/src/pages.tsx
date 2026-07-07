@@ -10,7 +10,7 @@ import { findPage, PageRenderer } from '@csp/bundle-kit';
 import { Link, useParams } from 'react-router-dom';
 import { useSiteContent } from './content-context';
 import { catalogNumber, dollars, Placeholder, pickKind } from './Placeholder';
-import { CurrentlyCards, CvRows, renderMap } from './renderers';
+import { CurrentlyCards, CvRows, FramedImg, frameStyle, renderMap } from './renderers';
 
 export function NotFound() {
   return (
@@ -146,9 +146,9 @@ export function ProjectDetail() {
       </header>
       <div className="product__body">
         <section className="product__images">
-          <div className="product__image-main">
+          <div className="product__image-main" style={frameStyle(project.images[0])}>
             {project.images[0] ? (
-              <img src={project.images[0]} alt={project.title} />
+              <FramedImg image={project.images[0]} alt={project.title} />
             ) : (
               <Placeholder kind={pickKind(project.id)} label={project.tags?.[0]?.toLowerCase()} />
             )}
@@ -157,7 +157,7 @@ export function ProjectDetail() {
             <div className="product__image-thumbs">
               {project.images.slice(0, 4).map((src, i) => (
                 <div className="product__image-thumb" key={i}>
-                  <img src={src} alt="" />
+                  <FramedImg image={src} alt="" />
                 </div>
               ))}
             </div>
@@ -213,9 +213,9 @@ export function ShopDetail() {
       </header>
       <div className="product__body">
         <section className="product__images">
-          <div className="product__image-main">
+          <div className="product__image-main" style={frameStyle(item.images[0])}>
             {item.images[0] ? (
-              <img src={item.images[0]} alt={item.name} />
+              <FramedImg image={item.images[0]} alt={item.name} />
             ) : (
               <Placeholder kind={pickKind(item.id)} label={item.name.toLowerCase()} />
             )}

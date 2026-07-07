@@ -1109,6 +1109,71 @@
   color: var(--err);
 }
 
+/* framed image editor: live crop preview + aspect ratio + drag-to-reposition (ImageField) */
+.csp-imgframe {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  padding: 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--field-border);
+  background: var(--field-bg);
+}
+.csp-imgframe__side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 200px;
+  min-width: 180px;
+}
+.csp-imgframe__hint {
+  margin: 0;
+}
+.csp-aspect {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* the drag surface: image is object-fit:cover-ed into the chosen frame; dragging pans it */
+.csp-focal {
+  position: relative;
+  width: 180px;
+  max-width: 100%;
+  flex: 0 0 auto;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--field-border);
+  background: var(--panel-2);
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.csp-focal:active {
+  cursor: grabbing;
+}
+.csp-focal:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.csp-focal__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+.csp-focal--original {
+  cursor: default;
+}
+.csp-focal--original .csp-focal__img {
+  position: static;
+  height: auto;
+  object-fit: contain;
+}
+
 /* color field (ColorField) */
 .csp-color-field {
   display: flex;
