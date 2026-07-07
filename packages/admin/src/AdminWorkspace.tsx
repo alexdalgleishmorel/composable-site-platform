@@ -1,6 +1,6 @@
 import { registry, UploaderProvider, type ContentIssue, type Uploader } from '@csp/blocks';
 import { newId, type Block, type TenantContent } from '@csp/core';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ContentApi } from './api';
 import { blockMeta } from './blockMeta';
 import { PreviewPane } from './PreviewPane';
@@ -51,17 +51,34 @@ export function AdminWorkspace({
   const [previewCollapsed, setPreviewCollapsed] = useState(false);
   const [publishCount, setPublishCount] = useState(0);
 
+  // Load a tenant's content exactly once. The guard is keyed on the tenant, not the `api` object, so
+  // a new transport instance (e.g. from an auth token renewal) can never re-fetch and overwrite the
+  // in-memory, not-yet-published document — the root cause of the "my edits vanished" data loss.
+  const loadedTenantRef = useRef<string | null>(null);
   useEffect(() => {
+    if (loadedTenantRef.current === session.tenantId) return;
     let active = true;
     api.getContent().then((c) => {
       if (!active) return;
+      loadedTenantRef.current = session.tenantId;
       setContent(c);
       setActivePageId(c.pages[0]?.id ?? null);
     });
     return () => {
       active = false;
     };
-  }, [api]);
+  }, [api, session.tenantId]);
+
+  // Warn before an accidental tab close/refresh drops unpublished work.
+  useEffect(() => {
+    if (!dirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [dirty]);
 
   if (!content) return <div className="admin__loading">Loading content…</div>;
 
