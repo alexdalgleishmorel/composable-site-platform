@@ -123,6 +123,47 @@ describe('project detail — sub-image click swaps the main image', () => {
     fireEvent.click(document.querySelector('.lightbox__img')!);
     expect(document.querySelector('.lightbox')).toBeTruthy();
   });
+
+  const lightboxImg = () => (document.querySelector('.lightbox__img') as HTMLImageElement).src;
+
+  it('ArrowRight / ArrowDown step to the next image and wrap past the last', () => {
+    renderAt('/projects/quiet-furniture');
+    fireEvent.click(document.querySelector('.product__image-main')!);
+    expect(lightboxImg()).toBe('https://cdn.example/one.jpg');
+
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    expect(lightboxImg()).toBe('https://cdn.example/two.jpg');
+
+    fireEvent.keyDown(window, { key: 'ArrowDown' });
+    expect(lightboxImg()).toBe('https://cdn.example/three.jpg');
+
+    fireEvent.keyDown(window, { key: 'ArrowRight' }); // wraps past the last image
+    expect(lightboxImg()).toBe('https://cdn.example/one.jpg');
+  });
+
+  it('ArrowLeft / ArrowUp step to the previous image and wrap before the first', () => {
+    renderAt('/projects/quiet-furniture');
+    fireEvent.click(document.querySelector('.product__image-main')!);
+    expect(lightboxImg()).toBe('https://cdn.example/one.jpg');
+
+    fireEvent.keyDown(window, { key: 'ArrowLeft' }); // wraps before the first image
+    expect(lightboxImg()).toBe('https://cdn.example/three.jpg');
+
+    fireEvent.keyDown(window, { key: 'ArrowUp' });
+    expect(lightboxImg()).toBe('https://cdn.example/two.jpg');
+  });
+
+  it('keeps the main image and the active thumbnail in sync after keyboard navigation', () => {
+    renderAt('/projects/quiet-furniture');
+    fireEvent.click(document.querySelector('.product__image-main')!);
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    fireEvent.click(screen.getByRole('button', { name: /close/i }));
+
+    const main = document.querySelector('.product__image-main img') as HTMLImageElement;
+    expect(main.src).toBe('https://cdn.example/two.jpg');
+    const thumbs = document.querySelectorAll('.product__image-thumb');
+    expect(thumbs[1]!.className).toContain('product__image-thumb--active');
+  });
 });
 
 describe('shop item detail — main image opens a fullscreen lightbox', () => {
@@ -131,5 +172,15 @@ describe('shop item detail — main image opens a fullscreen lightbox', () => {
     fireEvent.click(document.querySelector('.product__image-main')!);
     const lightboxImg = document.querySelector('.lightbox__img') as HTMLImageElement;
     expect(lightboxImg.src).toBe('https://cdn.example/bowl.jpg');
+  });
+
+  it('arrow keys are a no-op with a single image (wraps to itself)', () => {
+    renderAt('/shop/lemon-bowl');
+    fireEvent.click(document.querySelector('.product__image-main')!);
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    fireEvent.keyDown(window, { key: 'ArrowLeft' });
+    const lightboxImg = document.querySelector('.lightbox__img') as HTMLImageElement;
+    expect(lightboxImg.src).toBe('https://cdn.example/bowl.jpg');
+    expect(document.querySelector('.lightbox')).toBeTruthy();
   });
 });
