@@ -1,16 +1,56 @@
 import type {
   EntryListData,
+  ImageValue,
   NoteCardsData,
   Project,
   ProjectGridData,
   RichTextData,
   ShopData,
 } from '@csp/blocks';
+import { imageUrl } from '@csp/blocks';
 import { findPage, PageRenderer } from '@csp/bundle-kit';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useParams } from 'react-router-dom';
 import { useSiteContent } from './content-context';
 import { catalogNumber, dollars, Placeholder, pickKind } from './Placeholder';
 import { CurrentlyCards, CvRows, FramedImg, frameStyle, renderMap } from './renderers';
+
+/** A fullscreen, uncropped view of one image — closes on backdrop click, the close button, or Escape.
+ *  Portalled to `document.body` so it always covers the viewport regardless of any ancestor's
+ *  `page-enter` animation (a non-`none` `transform`, even at rest, would otherwise contain it). */
+function Lightbox({
+  image,
+  alt,
+  onClose,
+}: {
+  image: ImageValue;
+  alt: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
+  return createPortal(
+    <div className="lightbox" role="dialog" aria-modal="true" aria-label={alt} onClick={onClose}>
+      <button type="button" className="lightbox__close" onClick={onClose}>
+        × close
+      </button>
+      <img
+        className="lightbox__img"
+        src={imageUrl(image)}
+        alt={alt}
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>,
+    document.body,
+  );
+}
 
 export function NotFound() {
   return (
@@ -131,7 +171,19 @@ function useProjects(): Project[] {
 export function ProjectDetail() {
   const { slug } = useParams();
   const project = useProjects().find((p) => p.id === slug);
+  const [selected, setSelected] = useState(0);
+  const [lightbox, setLightbox] = useState(false);
+
+  // A different project can route in without unmounting this component (react-router keeps the
+  // instance across param changes on the same route) — reset the picked image / modal each time.
+  useEffect(() => {
+    setSelected(0);
+    setLightbox(false);
+  }, [project?.id]);
+
   if (!project) return <NotFound />;
+  const mainImage = project.images[selected];
+
   return (
     <div className="product page-enter">
       <header className="product__head">
@@ -146,21 +198,42 @@ export function ProjectDetail() {
       </header>
       <div className="product__body">
         <section className="product__images">
-          <div className="product__image-main" style={frameStyle(project.images[0])}>
-            {project.images[0] ? (
-              <FramedImg image={project.images[0]} alt={project.title} />
+          <button
+            type="button"
+            className="product__image-main"
+            style={frameStyle(mainImage)}
+            disabled={!mainImage}
+            onClick={() => setLightbox(true)}
+          >
+            {mainImage ? (
+              <>
+                <FramedImg image={mainImage} alt={project.title} />
+                <span className="product__image-main__hint">view full size</span>
+              </>
             ) : (
               <Placeholder kind={pickKind(project.id)} label={project.tags?.[0]?.toLowerCase()} />
             )}
-          </div>
+          </button>
           {project.images.length > 1 && (
             <div className="product__image-thumbs">
               {project.images.slice(0, 4).map((src, i) => (
-                <div className="product__image-thumb" key={i}>
+                <button
+                  type="button"
+                  key={i}
+                  className={
+                    'product__image-thumb' + (i === selected ? ' product__image-thumb--active' : '')
+                  }
+                  aria-current={i === selected}
+                  aria-label={`Show image ${i + 1} of ${project.images.length}`}
+                  onClick={() => setSelected(i)}
+                >
                   <FramedImg image={src} alt="" />
-                </div>
+                </button>
               ))}
             </div>
+          )}
+          {lightbox && mainImage && (
+            <Lightbox image={mainImage} alt={project.title} onClose={() => setLightbox(false)} />
           )}
         </section>
         <section className="product__info">
@@ -199,7 +272,12 @@ export function ShopDetail() {
     | ShopData
     | undefined;
   const item = shop?.items.find((i) => i.id === slug);
+  const [lightbox, setLightbox] = useState(false);
+  useEffect(() => setLightbox(false), [item?.id]);
+
   if (!shop || !item) return <NotFound />;
+  const mainImage = item.images[0];
+
   return (
     <div className="product page-enter">
       <header className="product__head">
@@ -213,13 +291,25 @@ export function ShopDetail() {
       </header>
       <div className="product__body">
         <section className="product__images">
-          <div className="product__image-main" style={frameStyle(item.images[0])}>
-            {item.images[0] ? (
-              <FramedImg image={item.images[0]} alt={item.name} />
+          <button
+            type="button"
+            className="product__image-main"
+            style={frameStyle(mainImage)}
+            disabled={!mainImage}
+            onClick={() => setLightbox(true)}
+          >
+            {mainImage ? (
+              <>
+                <FramedImg image={mainImage} alt={item.name} />
+                <span className="product__image-main__hint">view full size</span>
+              </>
             ) : (
               <Placeholder kind={pickKind(item.id)} label={item.name.toLowerCase()} />
             )}
-          </div>
+          </button>
+          {lightbox && mainImage && (
+            <Lightbox image={mainImage} alt={item.name} onClose={() => setLightbox(false)} />
+          )}
         </section>
         <section className="product__info">
           <div className="product__price">
