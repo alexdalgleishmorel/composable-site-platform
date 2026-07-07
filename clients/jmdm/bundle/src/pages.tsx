@@ -232,7 +232,7 @@ export function ProjectDetail() {
           </button>
           {project.images.length > 1 && (
             <div className="product__image-thumbs">
-              {project.images.slice(0, 4).map((src, i) => (
+              {project.images.map((src, i) => (
                 <button
                   type="button"
                   key={i}

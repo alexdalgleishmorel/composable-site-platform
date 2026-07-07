@@ -29,6 +29,15 @@ const content = (): TenantContent => ({
                 ],
                 order: 0,
               },
+              {
+                id: 'many-images',
+                title: 'Many Images',
+                images: Array.from(
+                  { length: 6 },
+                  (_, i) => `https://cdn.example/many-${i + 1}.jpg`,
+                ),
+                order: 1,
+              },
             ],
           },
         },
@@ -163,6 +172,31 @@ describe('project detail — sub-image click swaps the main image', () => {
     expect(main.src).toBe('https://cdn.example/two.jpg');
     const thumbs = document.querySelectorAll('.product__image-thumb');
     expect(thumbs[1]!.className).toContain('product__image-thumb--active');
+  });
+});
+
+describe('project detail — the thumbnail gallery is not capped at 4', () => {
+  it('renders a thumbnail for every image, not just the first 4', () => {
+    renderAt('/projects/many-images');
+    expect(document.querySelectorAll('.product__image-thumb')).toHaveLength(6);
+  });
+
+  it('clicking a thumbnail past the 4th still swaps the main image', () => {
+    renderAt('/projects/many-images');
+    fireEvent.click(document.querySelectorAll('.product__image-thumb')[5]!);
+    const main = document.querySelector('.product__image-main img') as HTMLImageElement;
+    expect(main.src).toBe('https://cdn.example/many-6.jpg');
+    expect(document.querySelectorAll('.product__image-thumb')[5]!.className).toContain(
+      'product__image-thumb--active',
+    );
+  });
+
+  it('arrow-key navigation in the lightbox still reaches images past the 4th', () => {
+    renderAt('/projects/many-images');
+    fireEvent.click(document.querySelector('.product__image-main')!); // opens on image 1
+    for (let i = 0; i < 5; i++) fireEvent.keyDown(window, { key: 'ArrowRight' }); // -> image 6
+    const lightboxImg = document.querySelector('.lightbox__img') as HTMLImageElement;
+    expect(lightboxImg.src).toBe('https://cdn.example/many-6.jpg');
   });
 });
 
