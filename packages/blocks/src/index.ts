@@ -22,6 +22,25 @@ export * from './contract';
 export * from './registry';
 export * from './validate';
 
+// The shared image value (URL string | framed object) + its codec/CSS helpers. Render bundles use
+// `imageUrl`/`readImage`/`aspectCss`/`objectPositionCss` to draw the per-image aspect ratio + focal
+// point; the editor uses the same helpers plus `ASPECT_PRESETS` to edit them.
+export {
+  imageValueSchema,
+  imageObjectSchema,
+  aspectRatioSchema,
+  imageUrl,
+  readImage,
+  aspectCss,
+  objectPositionCss,
+  isAspectRatio,
+  DEFAULT_ASPECT,
+  ASPECT_PRESETS,
+  type ImageValue,
+  type ImageObject,
+  type NormalizedImage,
+} from './image';
+
 // Image upload for EditForms — the admin injects the transport (presign + S3 PUT, #15/#20).
 export {
   UploaderProvider,

@@ -1,5 +1,6 @@
 import { newId } from '@csp/core';
 import { z } from 'zod';
+import { imageValueSchema } from '../../image';
 
 /** A single project — carried over verbatim from the old fixed schema, now block `data` (§5). */
 export const projectSchema = z.object({
@@ -7,7 +8,7 @@ export const projectSchema = z.object({
   title: z.string(), // may be empty while drafting; the render falls back to "(untitled)"
   summary: z.string().optional(), // short card text
   body: z.string().optional(), // full description
-  images: z.array(z.string().url()), // CDN URLs
+  images: z.array(imageValueSchema), // CDN URL, or a framed object (aspect ratio + focal point)
   link: z.string().url().optional(), // external link
   tags: z.array(z.string()).optional(),
   order: z.number().int().nonnegative(), // display order within the grid

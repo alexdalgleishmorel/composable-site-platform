@@ -1,5 +1,23 @@
-import { createContext, useContext, useRef, useState, type ReactNode } from 'react';
-import { Field, move, StringListField, TextField } from './fields';
+import {
+  createContext,
+  useContext,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react';
+import {
+  ASPECT_PRESETS,
+  aspectCss,
+  imageUrl,
+  isAspectRatio,
+  objectPositionCss,
+  readImage,
+  type ImageValue,
+  type NormalizedImage,
+} from '../image';
+import { Field, move, SelectField, StringListField, TextField } from './fields';
 
 /**
  * Image / asset upload for EditForms. The transport is *injected* by the admin app (presign + S3 PUT,
@@ -7,8 +25,10 @@ import { Field, move, StringListField, TextField } from './fields';
  * route through Lambda (§6). With no uploader in context, the fields degrade to manual URL entry.
  *
  * Visually (Knit redesign) an image is a **drag-and-drop dropzone** that's also click-to-browse; once
- * set it becomes a thumbnail with Replace / Remove. The `UploadButton` (URL field + button) is kept
- * for non-image assets like Lottie JSON (`AnimationField`).
+ * set it becomes a **framed preview** carrying an editable aspect ratio (default 4:5) and a drag-to-
+ * reposition focal point, plus Replace / Remove. The stored value is a {@link ImageValue}: a bare URL
+ * string (legacy / freshly uploaded) that the frame controls upgrade to the framed object form. The
+ * `UploadButton` (URL field + button) is kept for non-image assets like Lottie JSON (`AnimationField`).
  */
 export type Uploader = (file: File) => Promise<string>;
 
@@ -26,6 +46,21 @@ export function UploaderProvider({
 
 export function useUploader(): Uploader | null {
   return useContext(UploaderContext);
+}
+
+/** Merge a freshly uploaded URL into an existing value, preserving frame settings on Replace. A
+ *  fresh upload (or replacing a bare-string value) stays a bare string until the frame is edited. */
+function withUrl(prev: ImageValue | undefined, url: string): ImageValue {
+  return prev && typeof prev === 'object' ? { ...prev, url } : url;
+}
+
+/** Upgrade a value to the framed object form with a patched aspect ratio / focal point. */
+function withFrame(
+  prev: ImageValue,
+  patch: Partial<{ aspectRatio: string; focalX: number; focalY: number }>,
+): ImageValue {
+  const n = readImage(prev);
+  return { url: n.url, aspectRatio: n.aspectRatio, focalX: n.focalX, focalY: n.focalY, ...patch };
 }
 
 /** Drive a hidden `<input type="file">` from imperative code (dropzone click / Replace). */
@@ -109,25 +144,170 @@ function Dropzone({
   );
 }
 
-/** The filled state: thumbnail + Replace / Remove. */
-function Thumb({
-  url,
+const CUSTOM = '__custom__';
+
+/** The aspect-ratio control: a preset dropdown (4:5, 1:1, …, Original) plus a "Custom…" option that
+ *  reveals a free-form `W:H` input. Emits only valid ratios (`isAspectRatio`). */
+function AspectField({ value, onChange }: { value: string; onChange: (ratio: string) => void }) {
+  const isPreset = ASPECT_PRESETS.some((p) => p.value === value);
+  const [customMode, setCustomMode] = useState(!isPreset);
+  const [customText, setCustomText] = useState(isPreset ? '' : value);
+
+  return (
+    <div className="csp-aspect">
+      <SelectField
+        label="Aspect ratio"
+        value={customMode ? CUSTOM : value}
+        options={[...ASPECT_PRESETS, { value: CUSTOM, label: 'Custom…' }]}
+        onChange={(v) => {
+          if (v === CUSTOM) {
+            setCustomMode(true);
+            if (isAspectRatio(customText)) onChange(customText);
+          } else {
+            setCustomMode(false);
+            onChange(v);
+          }
+        }}
+      />
+      {customMode && (
+        <TextField
+          label="Custom ratio (W:H)"
+          value={customText}
+          placeholder="e.g. 5:7"
+          mono
+          onChange={(t) => {
+            setCustomText(t);
+            if (isAspectRatio(t)) onChange(t);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+const clampPct = (n: number) => Math.max(0, Math.min(100, n));
+
+/**
+ * A live crop preview at the chosen aspect ratio: the image is `object-fit: cover`-ed into the frame
+ * and the user **drags it to reposition** (pan), which sets the CSS `object-position` focal point so a
+ * fixed crop no longer cuts off the important part. Keyboard-operable (arrow keys pan). When the ratio
+ * is "original" there is no crop, so repositioning is disabled.
+ */
+function FocalPointPicker({
+  image,
+  onFocal,
+}: {
+  image: NormalizedImage;
+  onFocal: (focalX: number, focalY: number) => void;
+}) {
+  const boxRef = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ px: number; py: number; fx: number; fy: number } | null>(null);
+  const isOriginal = image.aspectRatio === 'original';
+
+  const onPointerDown = (e: ReactPointerEvent) => {
+    if (isOriginal || !boxRef.current) return;
+    boxRef.current.setPointerCapture(e.pointerId);
+    drag.current = { px: e.clientX, py: e.clientY, fx: image.focalX, fy: image.focalY };
+  };
+  const onPointerMove = (e: ReactPointerEvent) => {
+    const d = drag.current;
+    const rect = boxRef.current?.getBoundingClientRect();
+    if (!d || !rect) return;
+    // Pan: dragging the image right (dx > 0) reveals its left edge → object-position X decreases.
+    onFocal(
+      clampPct(d.fx - ((e.clientX - d.px) / rect.width) * 100),
+      clampPct(d.fy - ((e.clientY - d.py) / rect.height) * 100),
+    );
+  };
+  const endDrag = (e: ReactPointerEvent) => {
+    if (boxRef.current?.hasPointerCapture(e.pointerId))
+      boxRef.current.releasePointerCapture(e.pointerId);
+    drag.current = null;
+  };
+  const onKeyDown = (e: ReactKeyboardEvent) => {
+    if (isOriginal) return;
+    const step = 4;
+    let dx = 0;
+    let dy = 0;
+    if (e.key === 'ArrowRight') dx = -step;
+    else if (e.key === 'ArrowLeft') dx = step;
+    else if (e.key === 'ArrowDown') dy = -step;
+    else if (e.key === 'ArrowUp') dy = step;
+    else return;
+    e.preventDefault();
+    onFocal(clampPct(image.focalX + dx), clampPct(image.focalY + dy));
+  };
+
+  return (
+    <div
+      ref={boxRef}
+      className={'csp-focal' + (isOriginal ? ' csp-focal--original' : '')}
+      style={{ aspectRatio: aspectCss(image.aspectRatio) }}
+      role="group"
+      aria-label="Reposition image within frame"
+      tabIndex={isOriginal ? -1 : 0}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      onKeyDown={onKeyDown}
+    >
+      <img
+        className="csp-focal__img"
+        src={image.url}
+        alt=""
+        draggable={false}
+        style={
+          isOriginal ? undefined : { objectPosition: objectPositionCss(image.focalX, image.focalY) }
+        }
+      />
+    </div>
+  );
+}
+
+/** The filled state: a framed, repositionable preview + aspect-ratio picker + Replace / Center / Remove. */
+function FramedImage({
+  value,
+  onChange,
   onReplace,
   onRemove,
 }: {
-  url: string;
+  value: ImageValue;
+  onChange: (value: ImageValue) => void;
   onReplace: () => void;
   onRemove: () => void;
 }) {
+  const image = readImage(value);
+  const framed = image.aspectRatio !== 'original';
   return (
-    <div className="csp-imgfield">
-      <span className="csp-imgfield__thumb" style={{ backgroundImage: `url(${url})` }} />
-      <div className="csp-imgfield__meta">
-        <span className="csp-imgfield__name">Image attached</span>
+    <div className="csp-imgframe">
+      <FocalPointPicker
+        image={image}
+        onFocal={(focalX, focalY) => onChange(withFrame(value, { focalX, focalY }))}
+      />
+      <div className="csp-imgframe__side">
+        <AspectField
+          value={image.aspectRatio}
+          onChange={(aspectRatio) => onChange(withFrame(value, { aspectRatio }))}
+        />
+        {framed && (
+          <p className="csp-field__hint csp-imgframe__hint">
+            Drag the image to reposition it within the frame.
+          </p>
+        )}
         <div className="csp-imgfield__actions">
           <button type="button" className="csp-linkbtn" onClick={onReplace}>
             Replace
           </button>
+          {framed && (
+            <button
+              type="button"
+              className="csp-linkbtn"
+              onClick={() => onChange(withFrame(value, { focalX: 50, focalY: 50 }))}
+            >
+              Center
+            </button>
+          )}
           <button type="button" className="csp-linkbtn csp-linkbtn--danger" onClick={onRemove}>
             Remove
           </button>
@@ -212,23 +392,40 @@ export function UploadButton({
   );
 }
 
-/** A single image: dropzone → upload → thumbnail. Falls back to a URL field with no uploader. */
+/** A single image: dropzone → upload → framed, repositionable preview. Falls back to a URL field with
+ *  no uploader (dev/test; the frame controls need the upload plane). */
 export function ImageField(props: {
   label: string;
-  value: string | undefined;
-  onChange: (value: string) => void;
+  value: ImageValue | undefined;
+  onChange: (value: ImageValue) => void;
   placeholder?: string;
 }) {
   const uploader = useUploader();
-  const { busy, error, upload } = useUpload(uploader ?? (async () => ''), props.onChange);
+  const { busy, error, upload } = useUpload(uploader ?? (async () => ''), (url) =>
+    props.onChange(withUrl(props.value, url)),
+  );
   const picker = useFilePicker(upload);
 
-  if (!uploader) return <TextField {...props} />; // manual URL entry only
+  if (!uploader) {
+    return (
+      <TextField
+        label={props.label}
+        value={props.value ? imageUrl(props.value) : ''}
+        placeholder={props.placeholder}
+        onChange={props.onChange}
+      />
+    );
+  }
 
   return (
     <Field label={props.label}>
-      {props.value ? (
-        <Thumb url={props.value} onReplace={picker.open} onRemove={() => props.onChange('')} />
+      {props.value && imageUrl(props.value) ? (
+        <FramedImage
+          value={props.value}
+          onChange={props.onChange}
+          onReplace={picker.open}
+          onRemove={() => props.onChange('')}
+        />
       ) : (
         <Dropzone onFile={upload} open={picker.open} busy={busy} />
       )}
@@ -267,11 +464,11 @@ export function AnimationField(props: {
   );
 }
 
-/** One row of an image list when an uploader is present: thumbnail/dropzone + drag grip + remove. */
+/** One row of an image list when an uploader is present: framed preview/dropzone + drag grip + remove. */
 function ImageRow(props: {
   uploader: Uploader;
-  value: string;
-  onChange: (url: string) => void;
+  value: ImageValue;
+  onChange: (value: ImageValue) => void;
   onRemove: () => void;
   reorder: {
     overIndex: number | null;
@@ -284,7 +481,9 @@ function ImageRow(props: {
     onKeyDown: (e: React.KeyboardEvent) => void;
   };
 }) {
-  const { busy, error, upload } = useUpload(props.uploader, props.onChange);
+  const { busy, error, upload } = useUpload(props.uploader, (url) =>
+    props.onChange(withUrl(props.value, url)),
+  );
   const picker = useFilePicker(upload);
   const r = props.reorder;
   return (
@@ -317,8 +516,13 @@ function ImageRow(props: {
         </svg>
       </button>
       <div className="csp-list__body">
-        {props.value ? (
-          <Thumb url={props.value} onReplace={picker.open} onRemove={props.onRemove} />
+        {imageUrl(props.value) ? (
+          <FramedImage
+            value={props.value}
+            onChange={props.onChange}
+            onReplace={picker.open}
+            onRemove={props.onRemove}
+          />
         ) : (
           <Dropzone onFile={upload} open={picker.open} busy={busy} />
         )}
@@ -339,13 +543,13 @@ function ImageRow(props: {
 }
 
 /**
- * A list of image URLs. With an uploader: drag-and-drop thumbnails plus an "add image" dropzone that
- * appends. With no uploader: degrades to manual URL entry (`StringListField`).
+ * A list of images. With an uploader: framed, repositionable thumbnails plus an "add image" dropzone
+ * that appends. With no uploader: degrades to manual URL entry (`StringListField`).
  */
 export function ImageListField(props: {
   label: string;
-  values: string[];
-  onChange: (next: string[]) => void;
+  values: ImageValue[];
+  onChange: (next: ImageValue[]) => void;
   addLabel: string;
   placeholder?: string;
 }) {
@@ -358,7 +562,17 @@ export function ImageListField(props: {
   );
   const adder = useFilePicker(upload);
 
-  if (!uploader) return <StringListField {...props} />; // manual URL entry only
+  if (!uploader) {
+    return (
+      <StringListField
+        label={props.label}
+        values={props.values.map(imageUrl)}
+        onChange={props.onChange}
+        addLabel={props.addLabel}
+        placeholder={props.placeholder}
+      />
+    ); // manual URL entry only
+  }
 
   const reorderTo = (from: number, to: number) => {
     if (from === to || to < 0 || to >= props.values.length) return;
@@ -371,8 +585,8 @@ export function ImageListField(props: {
     setOverIndex(null);
     if (from != null) reorderTo(from, i);
   };
-  const setAt = (i: number, url: string) =>
-    props.onChange(props.values.map((v, k) => (k === i ? url : v)));
+  const setAt = (i: number, value: ImageValue) =>
+    props.onChange(props.values.map((v, k) => (k === i ? value : v)));
   const removeAt = (i: number) => props.onChange(props.values.filter((_, k) => k !== i));
 
   return (
@@ -383,7 +597,7 @@ export function ImageListField(props: {
             key={index}
             uploader={uploader}
             value={value}
-            onChange={(url) => setAt(index, url)}
+            onChange={(v) => setAt(index, v)}
             onRemove={() => removeAt(index)}
             reorder={{
               overIndex,
