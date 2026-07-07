@@ -16,25 +16,41 @@ import { useSiteContent } from './content-context';
 import { catalogNumber, dollars, Placeholder, pickKind } from './Placeholder';
 import { CurrentlyCards, CvRows, FramedImg, frameStyle, renderMap } from './renderers';
 
-/** A fullscreen, uncropped view of one image — closes on backdrop click, the close button, or Escape.
- *  Portalled to `document.body` so it always covers the viewport regardless of any ancestor's
- *  `page-enter` animation (a non-`none` `transform`, even at rest, would otherwise contain it). */
+/**
+ * A fullscreen, uncropped view of one image from a gallery — closes on backdrop click, the close
+ * button, or Escape; Left/Up and Right/Down step to the previous/next image, wrapping at the ends.
+ * Portalled to `document.body` so it always covers the viewport regardless of any ancestor's
+ * `page-enter` animation (a non-`none` `transform`, even at rest, would otherwise contain it).
+ */
 function Lightbox({
-  image,
+  images,
+  index,
   alt,
+  onNavigate,
   onClose,
 }: {
-  image: ImageValue;
+  images: ImageValue[];
+  index: number;
   alt: string;
+  onNavigate: (index: number) => void;
   onClose: () => void;
 }) {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (images.length <= 1) return;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        onNavigate((index - 1 + images.length) % images.length);
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        onNavigate((index + 1) % images.length);
+      }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
+  }, [images.length, index, onNavigate, onClose]);
 
   return createPortal(
     <div className="lightbox" role="dialog" aria-modal="true" aria-label={alt} onClick={onClose}>
@@ -43,7 +59,7 @@ function Lightbox({
       </button>
       <img
         className="lightbox__img"
-        src={imageUrl(image)}
+        src={imageUrl(images[index]!)}
         alt={alt}
         onClick={(e) => e.stopPropagation()}
       />
@@ -233,7 +249,13 @@ export function ProjectDetail() {
             </div>
           )}
           {lightbox && mainImage && (
-            <Lightbox image={mainImage} alt={project.title} onClose={() => setLightbox(false)} />
+            <Lightbox
+              images={project.images}
+              index={selected}
+              alt={project.title}
+              onNavigate={setSelected}
+              onClose={() => setLightbox(false)}
+            />
           )}
         </section>
         <section className="product__info">
@@ -272,11 +294,15 @@ export function ShopDetail() {
     | ShopData
     | undefined;
   const item = shop?.items.find((i) => i.id === slug);
+  const [selected, setSelected] = useState(0);
   const [lightbox, setLightbox] = useState(false);
-  useEffect(() => setLightbox(false), [item?.id]);
+  useEffect(() => {
+    setSelected(0);
+    setLightbox(false);
+  }, [item?.id]);
 
   if (!shop || !item) return <NotFound />;
-  const mainImage = item.images[0];
+  const mainImage = item.images[selected];
 
   return (
     <div className="product page-enter">
@@ -308,7 +334,13 @@ export function ShopDetail() {
             )}
           </button>
           {lightbox && mainImage && (
-            <Lightbox image={mainImage} alt={item.name} onClose={() => setLightbox(false)} />
+            <Lightbox
+              images={item.images}
+              index={selected}
+              alt={item.name}
+              onNavigate={setSelected}
+              onClose={() => setLightbox(false)}
+            />
           )}
         </section>
         <section className="product__info">
