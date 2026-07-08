@@ -14,6 +14,7 @@ import {
   objectPositionCss,
   readImage,
   readText,
+  zoomTransformCss,
   type ImageValue,
 } from '@csp/blocks';
 import type { RenderComponent, RenderMap } from '@csp/bundle-kit';
@@ -28,11 +29,20 @@ export function frameStyle(image: ImageValue | undefined): CSSProperties | undef
   return image == null ? undefined : { aspectRatio: aspectCss(readImage(image).aspectRatio) };
 }
 
-/** An `<img>` positioned by its focal point, from a bare URL string or a framed object value. */
+/** An `<img>` positioned by its focal point and magnified by its zoom, from a bare URL string or a
+ *  framed object value. The wrapper (`.tile__img-wrap` / `.product__image-*`) clips it via
+ *  `overflow: hidden` — without that, a zoomed-in image bleeds past its frame. */
 export function FramedImg({ image, alt }: { image: ImageValue; alt: string }) {
   const n = readImage(image);
   return (
-    <img src={n.url} alt={alt} style={{ objectPosition: objectPositionCss(n.focalX, n.focalY) }} />
+    <img
+      src={n.url}
+      alt={alt}
+      style={{
+        objectPosition: objectPositionCss(n.focalX, n.focalY),
+        ...zoomTransformCss(n.zoom, n.focalX, n.focalY),
+      }}
+    />
   );
 }
 
@@ -52,23 +62,34 @@ export function StyledP({ text, className }: { text: StyledText; className?: str
  *  instead of a bare truthiness check. */
 export const hasText = (v: StyledText | undefined): boolean => Boolean(v && readText(v).text);
 
-/** The About image: full-width, cropped to its chosen aspect ratio + focal point (frame carried in
- *  inline styles so it needs no bespoke CSS). "original" leaves it uncropped. */
+/** The About image: full-width, cropped to its chosen aspect ratio + focal point + zoom (frame carried
+ *  in inline styles so it needs no bespoke CSS). "original" leaves it uncropped. `overflow: hidden`
+ *  has to live on the wrapper, not the `<img>` itself — an element's own `transform: scale()` isn't
+ *  clipped by its own `overflow`, only by an ancestor's. */
 function AboutImage({ image }: { image: ImageValue }) {
   const n = readImage(image);
   return (
-    <img
-      src={n.url}
-      alt=""
+    <div
       style={{
         width: '100%',
         aspectRatio: aspectCss(n.aspectRatio),
-        objectFit: 'cover',
-        objectPosition: objectPositionCss(n.focalX, n.focalY),
-        display: 'block',
+        overflow: 'hidden',
         marginBottom: 16,
       }}
-    />
+    >
+      <img
+        src={n.url}
+        alt=""
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: objectPositionCss(n.focalX, n.focalY),
+          display: 'block',
+          ...zoomTransformCss(n.zoom, n.focalX, n.focalY),
+        }}
+      />
+    </div>
   );
 }
 

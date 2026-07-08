@@ -14,6 +14,7 @@ import {
   isAspectRatio,
   objectPositionCss,
   readImage,
+  zoomTransformCss,
   type ImageValue,
   type NormalizedImage,
 } from '../image';
@@ -54,13 +55,20 @@ function withUrl(prev: ImageValue | undefined, url: string): ImageValue {
   return prev && typeof prev === 'object' ? { ...prev, url } : url;
 }
 
-/** Upgrade a value to the framed object form with a patched aspect ratio / focal point. */
+/** Upgrade a value to the framed object form with a patched aspect ratio / focal point / zoom. */
 function withFrame(
   prev: ImageValue,
-  patch: Partial<{ aspectRatio: string; focalX: number; focalY: number }>,
+  patch: Partial<{ aspectRatio: string; focalX: number; focalY: number; zoom: number }>,
 ): ImageValue {
   const n = readImage(prev);
-  return { url: n.url, aspectRatio: n.aspectRatio, focalX: n.focalX, focalY: n.focalY, ...patch };
+  return {
+    url: n.url,
+    aspectRatio: n.aspectRatio,
+    focalX: n.focalX,
+    focalY: n.focalY,
+    zoom: n.zoom,
+    ...patch,
+  };
 }
 
 /** Drive a hidden `<input type="file">` from imperative code (dropzone click / Replace). */
@@ -258,14 +266,46 @@ function FocalPointPicker({
         alt=""
         draggable={false}
         style={
-          isOriginal ? undefined : { objectPosition: objectPositionCss(image.focalX, image.focalY) }
+          isOriginal
+            ? undefined
+            : {
+                objectPosition: objectPositionCss(image.focalX, image.focalY),
+                ...zoomTransformCss(image.zoom, image.focalX, image.focalY),
+              }
         }
       />
     </div>
   );
 }
 
-/** The filled state: a framed, repositionable preview + aspect-ratio picker + Replace / Center / Remove. */
+/** A zoom-percent slider (100–300%, scale-then-pan): magnifies the image around the current focal
+ *  point — `FocalPointPicker`'s drag then pans within that zoomed-in view. */
+function ZoomField({ zoom, onChange }: { zoom: number; onChange: (zoom: number) => void }) {
+  return (
+    <Field label="Zoom">
+      <div className="csp-zoom">
+        <input
+          type="range"
+          className="csp-zoom__range"
+          aria-label="Zoom"
+          min={100}
+          max={300}
+          step={10}
+          value={zoom}
+          onChange={(e) => onChange(Number(e.target.value))}
+        />
+        <span className="csp-zoom__value">{zoom}%</span>
+        {zoom !== 100 && (
+          <button type="button" className="csp-linkbtn" onClick={() => onChange(100)}>
+            Reset
+          </button>
+        )}
+      </div>
+    </Field>
+  );
+}
+
+/** The filled state: a framed, repositionable preview + aspect-ratio/zoom pickers + Replace / Center / Remove. */
 function FramedImage({
   value,
   onChange,
@@ -291,9 +331,15 @@ function FramedImage({
           onChange={(aspectRatio) => onChange(withFrame(value, { aspectRatio }))}
         />
         {framed && (
-          <p className="csp-field__hint csp-imgframe__hint">
-            Drag the image to reposition it within the frame.
-          </p>
+          <>
+            <ZoomField
+              zoom={image.zoom}
+              onChange={(zoom) => onChange(withFrame(value, { zoom }))}
+            />
+            <p className="csp-field__hint csp-imgframe__hint">
+              Drag the image to reposition it within the frame.
+            </p>
+          </>
         )}
         <div className="csp-imgfield__actions">
           <button type="button" className="csp-linkbtn" onClick={onReplace}>
