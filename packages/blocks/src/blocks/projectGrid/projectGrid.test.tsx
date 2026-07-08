@@ -59,4 +59,22 @@ describe('projectGrid EditForm', () => {
     expect(titles).toEqual(['B', 'A']);
     expect(orders).toEqual([0, 1]); // order tracks position
   });
+
+  it('no longer exposes Tags / External link inputs', () => {
+    renderEditForm(projectGrid.EditForm, { projects: [project()] });
+    expect(screen.queryByLabelText('External link')).toBeNull();
+    expect(screen.queryByLabelText('Tags')).toBeNull();
+    expect(screen.queryByText('+ tag')).toBeNull();
+  });
+
+  it("editing a project doesn't strip its existing tags/link (the fields are hidden, not deleted)", () => {
+    const ui = renderEditForm(projectGrid.EditForm, {
+      projects: [project({ tags: ['wood', 'oak'], link: 'https://example.com' })],
+    });
+    fireEvent.change(screen.getByPlaceholderText('Project title'), {
+      target: { value: 'Renamed' },
+    });
+    expect(ui.data().projects[0]!.tags).toEqual(['wood', 'oak']);
+    expect(ui.data().projects[0]!.link).toBe('https://example.com');
+  });
 });
