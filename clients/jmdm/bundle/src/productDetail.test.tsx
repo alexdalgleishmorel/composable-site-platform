@@ -27,6 +27,7 @@ const content = (): TenantContent => ({
                   'https://cdn.example/two.jpg',
                   'https://cdn.example/three.jpg',
                 ],
+                body: { text: 'A set of three plywood objects.', style: 'bold' },
                 order: 0,
               },
               {
@@ -37,6 +38,13 @@ const content = (): TenantContent => ({
                   (_, i) => `https://cdn.example/many-${i + 1}.jpg`,
                 ),
                 order: 1,
+              },
+              {
+                id: 'empty-body',
+                title: 'Empty Body',
+                images: [],
+                body: { text: '', style: 'italic' }, // a truthy object, but no actual text
+                order: 2,
               },
             ],
           },
@@ -61,6 +69,7 @@ const content = (): TenantContent => ({
                 name: 'Lemon Bowl',
                 priceCents: 14000,
                 images: ['https://cdn.example/bowl.jpg'],
+                description: { text: 'Turned ash, oil finish.', style: 'italic' },
                 inStock: true,
                 order: 0,
               },
@@ -218,6 +227,28 @@ describe('project detail — the thumbnail gallery is not capped at 4', () => {
     for (let i = 0; i < 5; i++) fireEvent.keyDown(window, { key: 'ArrowRight' }); // -> image 6
     const lightboxImg = document.querySelector('.lightbox__img') as HTMLImageElement;
     expect(lightboxImg.src).toBe('https://cdn.example/many-6.jpg');
+  });
+});
+
+describe('project/shop detail — Description text style', () => {
+  it("renders a project's Description with its chosen style", () => {
+    renderAt('/projects/quiet-furniture');
+    const desc = document.querySelector('.product__desc') as HTMLElement;
+    expect(desc.textContent).toBe('A set of three plywood objects.');
+    expect(desc.style.fontWeight).toBe('700');
+  });
+
+  it('hides the whole Description section when the text is empty (even as a styled object)', () => {
+    renderAt('/projects/empty-body');
+    expect(screen.queryByText('Description')).toBeNull();
+    expect(document.querySelector('.product__desc')).toBeNull();
+  });
+
+  it("renders a shop item's Description with its chosen style", () => {
+    renderAt('/shop/lemon-bowl');
+    const desc = document.querySelector('.product__desc') as HTMLElement;
+    expect(desc.textContent).toBe('Turned ash, oil finish.');
+    expect(desc.style.fontStyle).toBe('italic');
   });
 });
 

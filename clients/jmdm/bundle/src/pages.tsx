@@ -14,7 +14,15 @@ import { createPortal } from 'react-dom';
 import { Link, useParams } from 'react-router-dom';
 import { useSiteContent } from './content-context';
 import { catalogNumber, dollars, Placeholder, pickKind } from './Placeholder';
-import { CurrentlyCards, CvRows, FramedImg, frameStyle, renderMap } from './renderers';
+import {
+  CurrentlyCards,
+  CvRows,
+  FramedImg,
+  frameStyle,
+  hasText,
+  renderMap,
+  StyledP,
+} from './renderers';
 
 /**
  * A fullscreen, uncropped view of one image from a gallery — closes on backdrop click, the close
@@ -144,7 +152,7 @@ export function About() {
         <div className="about__col about__bio">
           <h4 className="about__col__h">{bio?.heading ?? 'background'}</h4>
           {bio?.paragraphs.map((p, i) => (
-            <p key={i}>{p}</p>
+            <StyledP key={i} text={p} />
           ))}
         </div>
         <div className="about__col">
@@ -297,10 +305,10 @@ export function ProjectDetail() {
               </dl>
             </div>
           )}
-          {project.body && (
+          {hasText(project.body) && (
             <div className="product__section">
               <h3 className="product__section__h">Description</h3>
-              <p className="product__desc">{project.body}</p>
+              <StyledP className="product__desc" text={project.body!} />
             </div>
           )}
           {project.link && (
@@ -381,10 +389,10 @@ export function ShopDetail() {
             <span className="product__stock__dot" />
             {item.inStock ? 'in stock' : 'sold out'}
           </div>
-          {item.description && (
+          {hasText(item.description) && (
             <div className="product__section">
               <h3 className="product__section__h">Description</h3>
-              <p className="product__desc">{item.description}</p>
+              <StyledP className="product__desc" text={item.description!} />
             </div>
           )}
           {/* Checkout deferred (ADR 0001 / §5) — beta shows the price, no purchase. */}
