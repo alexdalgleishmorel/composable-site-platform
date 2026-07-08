@@ -113,6 +113,7 @@ describe('image frame (aspect ratio + focal point)', () => {
       aspectRatio: '1:1',
       focalX: 50,
       focalY: 50,
+      zoom: 100,
     });
   });
 
@@ -127,6 +128,35 @@ describe('image frame (aspect ratio + focal point)', () => {
       aspectRatio: '4:5',
       focalX: 46,
       focalY: 50,
+      zoom: 100,
     });
+  });
+
+  it('defaults zoom to 100 and hides the Reset link until it changes', () => {
+    render(<FrameHarness initial="https://cdn.example/legacy.png" />);
+    expect((screen.getByLabelText('Zoom') as HTMLInputElement).value).toBe('100');
+    expect(screen.queryByRole('button', { name: 'Reset' })).toBeNull();
+  });
+
+  it('changing zoom upgrades to the object form and shows a Reset link that restores 100', () => {
+    render(<FrameHarness initial="https://cdn.example/legacy.png" />);
+    fireEvent.change(screen.getByLabelText('Zoom'), { target: { value: '150' } });
+    expect(JSON.parse(screen.getByTestId('v').textContent!)).toEqual({
+      url: 'https://cdn.example/legacy.png',
+      aspectRatio: '4:5',
+      focalX: 50,
+      focalY: 50,
+      zoom: 150,
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset' }));
+    expect(JSON.parse(screen.getByTestId('v').textContent!).zoom).toBe(100);
+    expect(screen.queryByRole('button', { name: 'Reset' })).toBeNull();
+  });
+
+  it('hides the zoom control when the aspect ratio is "original" (nothing to zoom within)', () => {
+    render(<FrameHarness initial="https://cdn.example/legacy.png" />);
+    fireEvent.change(screen.getByLabelText('Aspect ratio'), { target: { value: 'original' } });
+    expect(screen.queryByLabelText('Zoom')).toBeNull();
   });
 });
