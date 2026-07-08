@@ -24,6 +24,9 @@ export const imageObjectSchema = z.object({
   aspectRatio: aspectRatioSchema.optional(),
   focalX: z.number().min(0).max(100).optional(),
   focalY: z.number().min(0).max(100).optional(),
+  /** Percent scale (100 = no zoom). Magnifies the image around the focal point, then the focal point
+   *  pans within that zoomed view — the standard "zoom then crop" pattern. */
+  zoom: z.number().min(100).max(300).optional(),
 });
 export type ImageObject = z.infer<typeof imageObjectSchema>;
 
@@ -54,17 +57,21 @@ export interface NormalizedImage {
   aspectRatio: string;
   focalX: number;
   focalY: number;
+  zoom: number;
 }
 
-/** Normalise any stored value to the full object form, applying the 4:5 / centre defaults. Used by
- *  both the editor and the render bundles so legacy string images gain the frame automatically. */
+/** Normalise any stored value to the full object form, applying the 4:5 / centre / no-zoom defaults.
+ *  Used by both the editor and the render bundles so legacy string images gain the frame automatically. */
 export function readImage(v: ImageValue): NormalizedImage {
-  if (typeof v === 'string') return { url: v, aspectRatio: DEFAULT_ASPECT, focalX: 50, focalY: 50 };
+  if (typeof v === 'string') {
+    return { url: v, aspectRatio: DEFAULT_ASPECT, focalX: 50, focalY: 50, zoom: 100 };
+  }
   return {
     url: v.url,
     aspectRatio: v.aspectRatio ?? DEFAULT_ASPECT,
     focalX: v.focalX ?? 50,
     focalY: v.focalY ?? 50,
+    zoom: v.zoom ?? 100,
   };
 }
 
@@ -78,3 +85,21 @@ export function aspectCss(aspectRatio: string): string {
 /** CSS `object-position` from focal percentages, e.g. `"50% 50%"`. */
 export const objectPositionCss = (focalX: number, focalY: number): string =>
   `${focalX}% ${focalY}%`;
+
+/**
+ * CSS to magnify an already `object-fit: cover`-ed image around its focal point. `transformOrigin`
+ * matches `objectPositionCss`'s anchor so zoom always magnifies around the same point the user panned
+ * to, not the box centre — pan picks *what* shows, zoom picks *how much* of it. `transform` is omitted
+ * at zoom 100 (no scale needed). The clipping ancestor (the image frame) must set `overflow: hidden`,
+ * or the zoomed image bleeds past its box.
+ */
+export function zoomTransformCss(
+  zoom: number,
+  focalX: number,
+  focalY: number,
+): { transform?: string; transformOrigin: string } {
+  return {
+    transform: zoom === 100 ? undefined : `scale(${zoom / 100})`,
+    transformOrigin: objectPositionCss(focalX, focalY),
+  };
+}
