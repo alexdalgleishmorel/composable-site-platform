@@ -1,6 +1,7 @@
 import { fireEvent, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { renderEditForm } from '../../testing/renderEditForm';
+import { textOf } from '../../text';
 import { richText } from './index';
 import { richTextDefault, richTextSchema } from './schema';
 
@@ -37,7 +38,10 @@ describe('richText EditForm', () => {
     });
 
     expect(ui.data().paragraphs.length).toBe(2);
-    expect(ui.data().paragraphs[0]).toBe('Hello');
+    // Editing a paragraph upgrades it to the styled object form (same pattern as the image frame
+    // controls) — regular by default until the style picker is touched.
+    expect(ui.data().paragraphs[0]).toEqual({ text: 'Hello', style: 'regular' });
+    expect(textOf(ui.data().paragraphs[0]!)).toBe('Hello');
     expect(richTextSchema.safeParse(ui.data()).success).toBe(true);
   });
 
@@ -45,5 +49,16 @@ describe('richText EditForm', () => {
     const ui = renderEditForm(richText.EditForm, { heading: 'X', paragraphs: [''] });
     fireEvent.change(screen.getByPlaceholderText('Optional heading'), { target: { value: '' } });
     expect(ui.data().heading).toBeUndefined();
+  });
+
+  it('sets a paragraph style independently per row, preserving text', () => {
+    const ui = renderEditForm(richText.EditForm, {
+      paragraphs: ['First paragraph', 'Second paragraph'],
+    });
+    fireEvent.change(screen.getAllByLabelText('Paragraph style')[1]!, {
+      target: { value: 'italic' },
+    });
+    expect(ui.data().paragraphs[0]).toBe('First paragraph'); // untouched row stays a bare string
+    expect(ui.data().paragraphs[1]).toEqual({ text: 'Second paragraph', style: 'italic' });
   });
 });

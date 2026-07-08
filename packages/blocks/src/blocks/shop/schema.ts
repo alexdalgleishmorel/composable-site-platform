@@ -1,12 +1,13 @@
 import { newId } from '@csp/core';
 import { z } from 'zod';
 import { imageValueSchema } from '../../image';
+import { styledTextSchema } from '../../text';
 
 /** A shop item — money stored as integer cents, never a float (§5). */
 export const shopItemSchema = z.object({
   id: z.string().min(1),
   name: z.string(),
-  description: z.string().optional(),
+  description: styledTextSchema.optional(), // plain string, or { text, style }
   priceCents: z.number().int().nonnegative(), // integer cents
   images: z.array(imageValueSchema), // CDN URL, or a framed object (aspect ratio + focal point)
   stripeProductId: z.string().optional(), // synced to the Stripe Connect account

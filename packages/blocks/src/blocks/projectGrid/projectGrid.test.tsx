@@ -59,4 +59,17 @@ describe('projectGrid EditForm', () => {
     expect(titles).toEqual(['B', 'A']);
     expect(orders).toEqual([0, 1]); // order tracks position
   });
+
+  it('edits the body text and style independently', () => {
+    const ui = renderEditForm(projectGrid.EditForm, { projects: [project()] });
+
+    fireEvent.change(screen.getByPlaceholderText('Full description'), {
+      target: { value: 'A small table.' },
+    });
+    expect(ui.data().projects[0]!.body).toEqual({ text: 'A small table.', style: 'regular' });
+
+    fireEvent.change(screen.getByLabelText('Body style'), { target: { value: 'bold' } });
+    expect(ui.data().projects[0]!.body).toEqual({ text: 'A small table.', style: 'bold' });
+    expect(projectGridSchema.safeParse(ui.data()).success).toBe(true);
+  });
 });

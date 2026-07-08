@@ -6,11 +6,14 @@ import type {
   RichTextData,
   ShopData,
   ShopNotesData,
+  StyledText,
 } from '@csp/blocks';
 import {
   aspectCss,
+  fontStyleCss,
   objectPositionCss,
   readImage,
+  readText,
   zoomTransformCss,
   type ImageValue,
 } from '@csp/blocks';
@@ -42,6 +45,22 @@ export function FramedImg({ image, alt }: { image: ImageValue; alt: string }) {
     />
   );
 }
+
+/** A paragraph of text, styled per its regular/bold/italic choice — legacy plain-string text (from
+ *  before this control existed) renders unstyled, same as it always has. */
+export function StyledP({ text, className }: { text: StyledText; className?: string }) {
+  const n = readText(text);
+  return (
+    <p className={className} style={fontStyleCss(n.style)}>
+      {n.text}
+    </p>
+  );
+}
+
+/** True when a styled-text value actually has visible text — an empty `{ text: '', style }` object is
+ *  still a truthy *value*, so callers gating a whole section on "is there a description" need this
+ *  instead of a bare truthiness check. */
+export const hasText = (v: StyledText | undefined): boolean => Boolean(v && readText(v).text);
 
 /** The About image: full-width, cropped to its chosen aspect ratio + focal point + zoom (frame carried
  *  in inline styles so it needs no bespoke CSS). "original" leaves it uncropped. `overflow: hidden`
@@ -176,7 +195,7 @@ const RichTextRender: RenderComponent<RichTextData> = ({ data }) => (
       {data.heading && <h4 className="about__col__h">{data.heading}</h4>}
       {data.image && <AboutImage image={data.image} />}
       {data.paragraphs.map((p, i) => (
-        <p key={i}>{p}</p>
+        <StyledP key={i} text={p} />
       ))}
     </div>
     <div />

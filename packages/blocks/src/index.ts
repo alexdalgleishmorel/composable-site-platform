@@ -43,6 +43,24 @@ export {
   type NormalizedImage,
 } from './image';
 
+// The shared styled-text value (bare string | `{ text, style }`) + its codec/CSS helper. Render
+// bundles use `textOf`/`readText`/`fontStyleCss` to draw bold/italic/regular text; the editor uses
+// the same helpers plus `TEXT_STYLE_OPTIONS` to edit them.
+export {
+  styledTextSchema,
+  styledTextObjectSchema,
+  textStyleSchema,
+  textOf,
+  readText,
+  fontStyleCss,
+  DEFAULT_TEXT_STYLE,
+  TEXT_STYLE_OPTIONS,
+  type StyledText,
+  type StyledTextObject,
+  type TextStyle,
+  type NormalizedText,
+} from './text';
+
 // Image upload for EditForms — the admin injects the transport (presign + S3 PUT, #15/#20).
 export {
   UploaderProvider,
