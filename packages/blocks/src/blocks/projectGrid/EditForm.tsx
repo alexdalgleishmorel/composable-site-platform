@@ -1,5 +1,5 @@
 import type { EditFormComponent } from '../../contract';
-import { ListEditor, TextAreaField, TextField } from '../../ui/fields';
+import { ListEditor, StyledTextAreaField, TextField } from '../../ui/fields';
 import { ImageListField } from '../../ui/upload';
 import { newProject, type Project, type ProjectGridData } from './schema';
 
@@ -27,11 +27,11 @@ export const ProjectGridEditForm: EditFormComponent<ProjectGridData> = ({ data, 
             placeholder="Short card text"
             onChange={(summary) => update({ summary: summary || undefined })}
           />
-          <TextAreaField
+          <StyledTextAreaField
             label="Body"
             value={project.body}
             placeholder="Full description"
-            onChange={(body) => update({ body: body || undefined })}
+            onChange={(body) => update({ body })}
           />
           <ImageListField
             label="Image URLs"

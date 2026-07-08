@@ -3,6 +3,7 @@ import type {
   PortfolioProject,
   PortfolioProjectsData,
   RichTextData,
+  StyledText,
 } from '@csp/blocks';
 import type { TenantContent } from '@csp/core';
 import { createContext, useContext } from 'react';
@@ -29,8 +30,9 @@ export function useProjects(): PortfolioProject[] {
   return [...(data?.projects ?? [])].sort((a, b) => a.order - b.order);
 }
 
-/** The about-page bio paragraphs (a `richText` block). */
-export function useBioParagraphs(): string[] {
+/** The about-page bio paragraphs (a `richText` block) — plain strings, or `{ text, style }` for a
+ *  bold/italic/regular choice; `BioPanel` renders either. */
+export function useBioParagraphs(): StyledText[] {
   const content = useSiteContent();
   return blockData<RichTextData>(content, '/about', 'richText')?.paragraphs ?? [];
 }

@@ -1,7 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
-import { ColorField, move, SelectField, StringListField } from './fields';
+import type { StyledText } from '../text';
+import { ColorField, move, SelectField, StringListField, StyledTextAreaField } from './fields';
 
 describe('move()', () => {
   it('reorders without mutating, and is a no-op out of bounds', () => {
@@ -96,5 +97,41 @@ describe('SelectField', () => {
     expect(screen.getByText('Cee')).toBeTruthy();
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'c' } });
     expect(screen.getByTestId('s').textContent).toBe('c');
+  });
+});
+
+describe('StyledTextAreaField', () => {
+  function Harness() {
+    const [v, setV] = useState<StyledText | undefined>('Plain legacy text');
+    return (
+      <>
+        <StyledTextAreaField label="Body" value={v} onChange={setV} />
+        <output data-testid="v">{JSON.stringify(v)}</output>
+      </>
+    );
+  }
+
+  it('renders a legacy plain-string value as regular-styled text', () => {
+    render(<Harness />);
+    expect((screen.getByLabelText('Body') as HTMLTextAreaElement).value).toBe('Plain legacy text');
+    expect((screen.getByLabelText('Body style') as HTMLSelectElement).value).toBe('regular');
+  });
+
+  it('editing the text upgrades to the object form, preserving style', () => {
+    render(<Harness />);
+    fireEvent.change(screen.getByLabelText('Body'), { target: { value: 'Edited' } });
+    expect(JSON.parse(screen.getByTestId('v').textContent!)).toEqual({
+      text: 'Edited',
+      style: 'regular',
+    });
+  });
+
+  it('changing style upgrades to the object form, preserving text', () => {
+    render(<Harness />);
+    fireEvent.change(screen.getByLabelText('Body style'), { target: { value: 'bold' } });
+    expect(JSON.parse(screen.getByTestId('v').textContent!)).toEqual({
+      text: 'Plain legacy text',
+      style: 'bold',
+    });
   });
 });

@@ -1135,6 +1135,29 @@
   flex-direction: column;
   gap: 8px;
 }
+
+/* StyledTextAreaField: a textarea paired with its Regular/Bold/Italic style picker. */
+.csp-styledtext {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.csp-zoom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.csp-zoom__range {
+  flex: 1 1 auto;
+  accent-color: var(--accent);
+}
+.csp-zoom__value {
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+  width: 3.5ch;
+  flex: 0 0 auto;
+}
 /* the drag surface: image is object-fit:cover-ed into the chosen frame; dragging pans it */
 .csp-focal {
   position: relative;

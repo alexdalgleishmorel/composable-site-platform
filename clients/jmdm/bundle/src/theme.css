@@ -274,6 +274,8 @@ button {
      override this inline per image (default 4:5). */
   aspect-ratio: 4 / 5;
   margin: 14px 28px 26px;
+  /* Clips a zoomed-in image (`transform: scale()`) to the frame instead of letting it bleed out. */
+  overflow: hidden;
 }
 .tile__title {
   font-size: 22px;
@@ -682,6 +684,9 @@ button {
   margin-bottom: 14px;
   text-align: left;
   cursor: zoom-in;
+  /* Clips a zoomed-in image (`transform: scale()`) to the frame; the hint chip below stays visible
+     since it's positioned within the box, not past its edge. */
+  overflow: hidden;
 }
 .product__image-main:disabled {
   cursor: default;
@@ -717,6 +722,7 @@ button {
   position: relative;
   border: 1px solid var(--ink);
   cursor: pointer;
+  overflow: hidden;
 }
 .product__image-thumb:hover {
   opacity: 0.85;

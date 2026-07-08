@@ -77,4 +77,17 @@ describe('projectGrid EditForm', () => {
     expect(ui.data().projects[0]!.tags).toEqual(['wood', 'oak']);
     expect(ui.data().projects[0]!.link).toBe('https://example.com');
   });
+
+  it('edits the body text and style independently', () => {
+    const ui = renderEditForm(projectGrid.EditForm, { projects: [project()] });
+
+    fireEvent.change(screen.getByPlaceholderText('Full description'), {
+      target: { value: 'A small table.' },
+    });
+    expect(ui.data().projects[0]!.body).toEqual({ text: 'A small table.', style: 'regular' });
+
+    fireEvent.change(screen.getByLabelText('Body style'), { target: { value: 'bold' } });
+    expect(ui.data().projects[0]!.body).toEqual({ text: 'A small table.', style: 'bold' });
+    expect(projectGridSchema.safeParse(ui.data()).success).toBe(true);
+  });
 });

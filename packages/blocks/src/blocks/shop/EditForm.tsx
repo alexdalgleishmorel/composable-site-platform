@@ -1,5 +1,11 @@
 import type { EditFormComponent } from '../../contract';
-import { CheckboxField, ListEditor, NumberField, TextAreaField, TextField } from '../../ui/fields';
+import {
+  CheckboxField,
+  ListEditor,
+  NumberField,
+  StyledTextAreaField,
+  TextField,
+} from '../../ui/fields';
 import { ImageListField } from '../../ui/upload';
 import { newShopItem, type ShopData, type ShopItem } from './schema';
 
@@ -31,11 +37,11 @@ export const ShopEditForm: EditFormComponent<ShopData> = ({ data, onChange }) =>
             placeholder="Item name"
             onChange={(name) => update({ name })}
           />
-          <TextAreaField
+          <StyledTextAreaField
             label="Description"
             value={item.description}
             placeholder="Optional description"
-            onChange={(description) => update({ description: description || undefined })}
+            onChange={(description) => update({ description })}
           />
           {/* Price is edited in major units but stored as integer cents. */}
           <NumberField

@@ -23,8 +23,9 @@ export * from './registry';
 export * from './validate';
 
 // The shared image value (URL string | framed object) + its codec/CSS helpers. Render bundles use
-// `imageUrl`/`readImage`/`aspectCss`/`objectPositionCss` to draw the per-image aspect ratio + focal
-// point; the editor uses the same helpers plus `ASPECT_PRESETS` to edit them.
+// `imageUrl`/`readImage`/`aspectCss`/`objectPositionCss`/`zoomTransformCss` to draw the per-image
+// aspect ratio, focal point, and zoom; the editor uses the same helpers plus `ASPECT_PRESETS` to edit
+// them.
 export {
   imageValueSchema,
   imageObjectSchema,
@@ -33,6 +34,7 @@ export {
   readImage,
   aspectCss,
   objectPositionCss,
+  zoomTransformCss,
   isAspectRatio,
   DEFAULT_ASPECT,
   ASPECT_PRESETS,
@@ -40,6 +42,24 @@ export {
   type ImageObject,
   type NormalizedImage,
 } from './image';
+
+// The shared styled-text value (bare string | `{ text, style }`) + its codec/CSS helper. Render
+// bundles use `textOf`/`readText`/`fontStyleCss` to draw bold/italic/regular text; the editor uses
+// the same helpers plus `TEXT_STYLE_OPTIONS` to edit them.
+export {
+  styledTextSchema,
+  styledTextObjectSchema,
+  textStyleSchema,
+  textOf,
+  readText,
+  fontStyleCss,
+  DEFAULT_TEXT_STYLE,
+  TEXT_STYLE_OPTIONS,
+  type StyledText,
+  type StyledTextObject,
+  type TextStyle,
+  type NormalizedText,
+} from './text';
 
 // Image upload for EditForms — the admin injects the transport (presign + S3 PUT, #15/#20).
 export {

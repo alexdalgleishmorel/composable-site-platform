@@ -69,4 +69,23 @@ describe('shop EditForm', () => {
     fireEvent.change(screen.getByPlaceholderText('USD'), { target: { value: 'cad' } });
     expect(ui.data().currency).toBe('CAD');
   });
+
+  it('edits the description text and style independently', () => {
+    const ui = renderEditForm(shop.EditForm, { ...shopDefault(), items: [item()] });
+
+    fireEvent.change(screen.getByPlaceholderText('Optional description'), {
+      target: { value: 'Turned ash, oil finish.' },
+    });
+    expect(ui.data().items[0]!.description).toEqual({
+      text: 'Turned ash, oil finish.',
+      style: 'regular',
+    });
+
+    fireEvent.change(screen.getByLabelText('Description style'), { target: { value: 'italic' } });
+    expect(ui.data().items[0]!.description).toEqual({
+      text: 'Turned ash, oil finish.',
+      style: 'italic',
+    });
+    expect(shopSchema.safeParse(ui.data()).success).toBe(true);
+  });
 });

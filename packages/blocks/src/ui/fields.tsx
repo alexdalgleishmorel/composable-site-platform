@@ -1,4 +1,5 @@
 import { useRef, useState, type ReactNode } from 'react';
+import { readText, TEXT_STYLE_OPTIONS, type StyledText, type TextStyle } from '../text';
 
 /**
  * Shared EditForm primitives. Every block's EditForm is built from these, so the admin app gets a
@@ -93,6 +94,49 @@ export function TextAreaField(props: {
         }}
       />
     </Field>
+  );
+}
+
+/**
+ * A multi-line text field paired with a Regular/Bold/Italic style picker, operating on the shared
+ * `StyledText` union directly (a bare string upgrades to `{ text, style }` the moment the style is
+ * changed — same pattern as the image frame controls in `ui/upload.tsx`).
+ */
+export function StyledTextAreaField(props: {
+  label: string;
+  value: StyledText | undefined;
+  onChange: (value: StyledText) => void;
+  placeholder?: string;
+  rows?: number;
+}) {
+  const { text, style } = readText(props.value ?? '');
+  const autosize = (el: HTMLTextAreaElement | null) => {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  };
+  return (
+    <div className="csp-styledtext">
+      <Field label={props.label}>
+        <textarea
+          className="csp-input csp-input--multiline"
+          rows={props.rows ?? 3}
+          ref={autosize}
+          value={text}
+          placeholder={props.placeholder}
+          onChange={(e) => {
+            props.onChange({ text: e.target.value, style });
+            autosize(e.target);
+          }}
+        />
+      </Field>
+      <SelectField
+        label={`${props.label} style`}
+        value={style}
+        options={TEXT_STYLE_OPTIONS}
+        onChange={(next) => props.onChange({ text, style: next as TextStyle })}
+      />
+    </div>
   );
 }
 
