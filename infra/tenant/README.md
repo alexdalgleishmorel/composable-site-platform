@@ -10,6 +10,8 @@ Provisions (`terraform validate` ✓):
 - **ACM** certificate in **us-east-1** (CloudFront requirement), DNS-validated.
 - **Private S3** site bucket + **CloudFront** (OAC), `default_root_object=index.html`, and
   **403/404 → /index.html** so SPA deep links like `/admin` resolve (§4).
+- Optional **`primary_domain`**: serve from a different domain (its zone must already be in-account);
+  `tenant_domain` + `www.*` then 301-redirect to it via a CloudFront Function. tenantId is unchanged.
 - **Cognito user** mapping the client's email → `custom:tenantId` (the isolation boundary, §8).
 
 ## Run (CI does this; manual form)

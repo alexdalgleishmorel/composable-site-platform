@@ -14,6 +14,16 @@ variable "display_name" {
   default     = ""
 }
 
+variable "primary_domain" {
+  description = <<-EOT
+    Optional domain to serve the site from instead of tenant_domain (e.g. a shorter domain bought
+    later). tenant_domain + all www.* hostnames then 301-redirect to it, path kept; the tenantId stays
+    tenant_domain. Its hosted zone must already exist in this account. Empty = serve tenant_domain.
+  EOT
+  type        = string
+  default     = ""
+}
+
 variable "aws_region" {
   type    = string
   default = "us-east-1"

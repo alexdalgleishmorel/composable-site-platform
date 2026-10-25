@@ -17,6 +17,7 @@ client), not code.
 | --- | --- |
 | AWS account / region | `696532327395` / `us-east-1` |
 | First client (public site) | https://jmdm.studio |
+| Second client (Alex's portfolio) | https://amdm.ca — tenantId `alexdalgleishmorel.com`, which (+ www) 301s to amdm.ca |
 | Shared admin app | https://dubbyynbuy5nm.cloudfront.net |
 | API base | `https://j2xlicenh6.execute-api.us-east-1.amazonaws.com` |
 | Cognito user pool / client | `us-east-1_wkhAu5Zed` / `62rb7le9g30n1qlg36c7m0b7e2` |
@@ -85,6 +86,17 @@ table above).
 Edit `clients/<client>/bundle/src/seed.ts`, then re-run `onboard-client` (it's idempotent and PUTs
 the seed). Note: this **overwrites** whatever the client has since edited in the admin — only do it
 before handoff or with the client's say-so.
+
+### Serve a client from a different (primary) domain
+
+Register/transfer the new domain into Route 53 in this account (hosted zone must exist; verify the
+registrant email), then re-run `provision-tenant` with the **same** `tenant_domain` plus
+`primary_domain=<new>`. The cert is reissued to cover both, the distribution gains the new aliases, and
+a CloudFront Function 301-redirects every other hostname to `https://<primary><path>?<query>`. The
+tenantId stays the old domain, so the client's bundle must pass `useContent(API, { tenantId })` instead
+of deriving it from the hostname (see `clients/alex/bundle/src/App.tsx`). **Always pass
+`primary_domain` on any later `provision-tenant`/`onboard-client` re-run for that tenant**, or the
+redirect + new aliases are removed. Live: `alexdalgleishmorel.com` → `amdm.ca`.
 
 ### A client site suddenly returns NXDOMAIN / DNS_PROBE_FINISHED_NXDOMAIN
 
