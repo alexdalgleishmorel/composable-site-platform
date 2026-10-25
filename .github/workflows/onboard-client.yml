@@ -20,6 +20,10 @@ on:
       user_pool_id:
         description: 'Shared Cognito user pool id (infra/shared output)'
         required: true
+      primary_domain:
+        description: 'Optional domain to serve from instead (tenant_domain then 301-redirects to it)'
+        required: false
+        default: ''
       api_base_url:
         description: 'Shared API base URL (infra/shared output)'
         required: true
@@ -56,6 +60,7 @@ jobs:
           TF_VAR_tenant_domain: ${{ inputs.tenant_domain }}
           TF_VAR_client_google_email: ${{ inputs.client_email }}
           TF_VAR_user_pool_id: ${{ inputs.user_pool_id }}
+          TF_VAR_primary_domain: ${{ inputs.primary_domain }}
         run: |
           terraform init \
             -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \

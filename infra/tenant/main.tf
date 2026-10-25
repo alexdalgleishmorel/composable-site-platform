@@ -20,11 +20,34 @@ locals {
   nameservers = var.manage_zone ? aws_route53_zone.this[0].name_servers : data.aws_route53_zone.this[0].name_servers
 }
 
+# --- Optional primary domain: serve the site from a different domain than the tenantId -------------
+# When set, the site is served from primary_domain and every other hostname (tenant_domain, www.*)
+# 301-redirects to it with the path + query kept, so old links keep working. The tenantId (content,
+# uploads, the email->tenant map) stays tenant_domain. The primary domain's hosted zone must already
+# exist in this account (as Route 53 Domains creates it at registration).
+locals {
+  has_primary    = var.primary_domain != "" && var.primary_domain != var.tenant_domain
+  primary_domain = local.has_primary ? var.primary_domain : var.tenant_domain
+  hostnames = distinct(flatten([
+    for d in [local.primary_domain, var.tenant_domain] : [d, "www.${d}"]
+  ]))
+}
+
+data "aws_route53_zone" "primary" {
+  count = local.has_primary ? 1 : 0
+  name  = var.primary_domain
+}
+
+locals {
+  primary_zone_id = local.has_primary ? data.aws_route53_zone.primary[0].zone_id : local.zone_id
+  primary_names   = [local.primary_domain, "www.${local.primary_domain}"]
+}
+
 # --- TLS: ACM cert in us-east-1 (required by CloudFront), DNS-validated -----------------------------
 resource "aws_acm_certificate" "cert" {
   provider                  = aws.us_east_1
   domain_name               = var.tenant_domain
-  subject_alternative_names = ["www.${var.tenant_domain}"]
+  subject_alternative_names = [for h in local.hostnames : h if h != var.tenant_domain]
   validation_method         = "DNS"
   lifecycle {
     create_before_destroy = true
@@ -39,7 +62,7 @@ resource "aws_route53_record" "cert_validation" {
       record = dvo.resource_record_value
     }
   }
-  zone_id         = local.zone_id
+  zone_id         = contains(local.primary_names, each.key) ? local.primary_zone_id : local.zone_id
   name            = each.value.name
   type            = each.value.type
   records         = [each.value.record]
@@ -76,7 +99,7 @@ resource "aws_cloudfront_origin_access_control" "site" {
 resource "aws_cloudfront_distribution" "site" {
   enabled             = true
   default_root_object = "index.html"
-  aliases             = [var.tenant_domain, "www.${var.tenant_domain}"]
+  aliases             = local.hostnames
 
   origin {
     domain_name              = aws_s3_bucket.site.bucket_regional_domain_name
@@ -90,6 +113,14 @@ resource "aws_cloudfront_distribution" "site" {
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
     cache_policy_id        = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized
+
+    dynamic "function_association" {
+      for_each = local.has_primary ? [1] : []
+      content {
+        event_type   = "viewer-request"
+        function_arn = aws_cloudfront_function.redirect_to_primary[0].arn
+      }
+    }
   }
 
   # SPA deep links (/admin, /projects/...) — serve index.html on 403/404 so client routing works (§4).
@@ -115,6 +146,36 @@ resource "aws_cloudfront_distribution" "site" {
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }
+}
+
+# Viewer-request redirect: any hostname other than the primary domain -> https://<primary><uri>?<qs>.
+# Runs before the cache, so redirects are never cached against the primary's objects.
+resource "aws_cloudfront_function" "redirect_to_primary" {
+  count   = local.has_primary ? 1 : 0
+  name    = "csp-redirect-${local.name}"
+  runtime = "cloudfront-js-2.0"
+  publish = true
+  code    = <<-EOT
+    function handler(event) {
+      var req = event.request;
+      var host = req.headers.host ? req.headers.host.value : '';
+      if (host === '${local.primary_domain}') return req;
+      var parts = [];
+      for (var key in req.querystring) {
+        var q = req.querystring[key];
+        var values = q.multiValue ? q.multiValue : [q];
+        for (var i = 0; i < values.length; i++) {
+          parts.push(values[i].value === '' ? key : key + '=' + values[i].value);
+        }
+      }
+      var location = 'https://${local.primary_domain}' + req.uri + (parts.length ? '?' + parts.join('&') : '');
+      return {
+        statusCode: 301,
+        statusDescription: 'Moved Permanently',
+        headers: { location: { value: location } },
+      };
+    }
+  EOT
 }
 
 resource "aws_s3_bucket_policy" "site" {
@@ -153,6 +214,33 @@ resource "aws_route53_record" "apex" {
 resource "aws_route53_record" "www" {
   zone_id         = local.zone_id
   name            = "www.${var.tenant_domain}"
+  type            = "A"
+  allow_overwrite = true
+  alias {
+    name                   = aws_cloudfront_distribution.site.domain_name
+    zone_id                = aws_cloudfront_distribution.site.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+# Primary domain apex + www -> the same CloudFront (only when primary_domain is set).
+resource "aws_route53_record" "primary_apex" {
+  count           = local.has_primary ? 1 : 0
+  zone_id         = local.primary_zone_id
+  name            = var.primary_domain
+  type            = "A"
+  allow_overwrite = true
+  alias {
+    name                   = aws_cloudfront_distribution.site.domain_name
+    zone_id                = aws_cloudfront_distribution.site.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "primary_www" {
+  count           = local.has_primary ? 1 : 0
+  zone_id         = local.primary_zone_id
+  name            = "www.${var.primary_domain}"
   type            = "A"
   allow_overwrite = true
   alias {

@@ -20,6 +20,9 @@ import { useScene } from './scene/useScene';
 import { alexSeed } from './seed';
 
 const API_BASE: string = import.meta.env.VITE_API_BASE_URL ?? '';
+// Served from amdm.ca (alexdalgleishmorel.com redirects there), but the tenantId is still the
+// original domain — so name it rather than deriving it from the hostname.
+const TENANT_ID = 'alexdalgleishmorel.com';
 
 /**
  * The laptop-scene stage. One cohesive surface: the scene frame + nav + bottom panel are chrome; the
@@ -156,7 +159,7 @@ export function Site({ content, previewing }: { content: TenantContent; previewi
 }
 
 export function App() {
-  const { content, error, previewing } = useContent(API_BASE);
+  const { content, error, previewing } = useContent(API_BASE, { tenantId: TENANT_ID });
   // Dev / standalone fallback: render the committed seed when the API isn't reachable.
   const data = content ?? (error ? alexSeed : null);
   if (!data) {
