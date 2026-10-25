@@ -59,6 +59,17 @@ Workflows (`.github/workflows/`):
 
 1. **Register the domain** via Route 53 Domains (registrant = the client). This is the one manual,
    paid step. (jmdm.studio cost ~$13/yr.)
+   - ⚠️ **Verify the registrant email — mandatory, time-boxed.** ICANN requires the registrant
+     contact email to be verified within **15 days** of registration. AWS emails the registrant a
+     verification link; if it's not clicked in time, AWS applies **`clientHold`**, which makes the
+     registry pull the domain's delegation and the whole site goes **NXDOMAIN** (this is exactly what
+     took jmdm.studio down ~2026-06-20). Tell the client to click that link the day they register,
+     then confirm it landed:
+     ```bash
+     aws route53domains get-contact-reachability-status --region us-east-1 --domain-name <domain>
+     # must be DONE, not PENDING.  If it lapsed:
+     aws route53domains resend-contact-reachability-email --region us-east-1 --domain-name <domain>
+     ```
 2. Add a **bundle** under `clients/<client>/bundle` (start from jmdm's; it's the bespoke render — the
    only per-client code) and a **seed** (`src/seed.ts`).
 3. Run the **`onboard-client`** workflow (Actions tab → Run workflow) with: `client`,
@@ -74,6 +85,31 @@ table above).
 Edit `clients/<client>/bundle/src/seed.ts`, then re-run `onboard-client` (it's idempotent and PUTs
 the seed). Note: this **overwrites** whatever the client has since edited in the admin — only do it
 before handoff or with the client's say-so.
+
+### A client site suddenly returns NXDOMAIN / DNS_PROBE_FINISHED_NXDOMAIN
+
+The domain resolves *nothing* (no NS/SOA/A) — the registry isn't publishing the delegation. This is a
+**registry/registrar** problem, not CloudFront/S3/DNS-record config. Diagnose from the registration,
+not the hosted zone:
+
+```bash
+aws route53domains get-domain-detail --region us-east-1 --domain-name <domain> \
+  --query "{Status:StatusList,Expiry:ExpirationDate}"
+aws route53domains get-contact-reachability-status --region us-east-1 --domain-name <domain>
+```
+
+- **`clientHold` in the status list** ⇒ the registry has withdrawn the delegation. On Route 53 domains
+  this is almost always the **unverified registrant email** (reachability `PENDING`). Fix: `resend`
+  the reachability email (command above), have the registrant click the link — AWS auto-clears the
+  hold and the domain republishes within minutes-to-a-few-hours (TLD propagation). You **cannot**
+  remove `clientHold` directly via API; it's tied to verification.
+- **Expired / `pendingDelete`** ⇒ registration lapsed. Check `Expiry` and `AutoRenew`; renew.
+- Status looks clean but still NXDOMAIN ⇒ compare the registration's `Nameservers` against the hosted
+  zone's `DelegationSet.NameServers` (a deleted-and-recreated zone gets *new* NS that no longer match).
+
+**History:** jmdm.studio went dark ~2026-06-20 from `clientHold` after its registrant-email
+verification lapsed (15-day ICANN window from its 2026-06-05 registration). See the onboarding
+step-1 warning above — verifying the registrant email at onboarding prevents this.
 
 ### Local dev
 
